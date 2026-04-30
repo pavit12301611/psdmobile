@@ -1,0 +1,3375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pavit Singh — 14-Year-Old Developer Prodigy 🚀</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --neon-cyan: #00f0ff;
+            --neon-magenta: #ff00e5;
+            --neon-green: #39ff14;
+            --neon-yellow: #ffe600;
+            --neon-orange: #ff6600;
+            --dark-bg: #0a0a0f;
+            --darker-bg: #050508;
+            --card-bg: rgba(15, 15, 25, 0.85);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --text-primary: #e8e8f0;
+            --text-secondary: #8888aa;
+            --gradient-1: linear-gradient(135deg, #00f0ff, #0080ff);
+            --gradient-2: linear-gradient(135deg, #ff00e5, #ff6600);
+            --gradient-3: linear-gradient(135deg, #39ff14, #00f0ff);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--darker-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 2px; }
+
+        /* Canvas Background */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--darker-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-text {
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            color: var(--neon-cyan);
+            margin-bottom: 20px;
+        }
+
+        .loader-bar {
+            width: 200px;
+            height: 3px;
+            background: rgba(0, 240, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loader-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--gradient-1);
+            border-radius: 2px;
+            animation: loadBar 2s ease forwards;
+        }
+
+        @keyframes loadBar {
+            to { width: 100%; }
+        }
+
+        .loader-percentage {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            color: var(--neon-cyan);
+            margin-top: 15px;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1000;
+            background: rgba(5, 5, 8, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .nav.hidden {
+            transform: translateY(-100%);
+        }
+
+        .nav-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-logo span {
+            color: var(--neon-magenta);
+            -webkit-text-fill-color: var(--neon-magenta);
+        }
+
+        .hamburger {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 5px;
+            z-index: 1001;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 2px;
+            background: var(--neon-cyan);
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 320px;
+            height: 100vh;
+            background: rgba(10, 10, 15, 0.98);
+            backdrop-filter: blur(30px);
+            z-index: 999;
+            padding: 80px 30px 30px;
+            transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-left: 1px solid rgba(0, 240, 255, 0.15);
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu a {
+            display: block;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .mobile-menu a:hover, .mobile-menu a:active {
+            color: var(--neon-cyan);
+            padding-left: 10px;
+            border-bottom-color: rgba(0, 240, 255, 0.3);
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Section Styles */
+        section {
+            position: relative;
+            z-index: 1;
+            padding: 80px 20px 40px;
+        }
+
+        .section-tag {
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            color: var(--neon-cyan);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            opacity: 0.7;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 25px;
+            line-height: 1.3;
+        }
+
+        .section-title .gradient-text {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-title .gradient-text-2 {
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-top: 70px;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 50px;
+            padding: 6px 16px;
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            color: var(--neon-cyan);
+            margin-bottom: 20px;
+            width: fit-content;
+            animation: pulse-border 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgba(0, 240, 255, 0.2); }
+            50% { border-color: rgba(0, 240, 255, 0.6); }
+        }
+
+        .hero-badge .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 5px;
+        }
+
+        .hero h1 .line1 {
+            display: block;
+            color: var(--text-primary);
+        }
+
+        .hero h1 .line2 {
+            display: block;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero h1 .line3 {
+            display: block;
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-tagline {
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            color: var(--neon-green);
+            margin: 15px 0;
+            padding: 10px 15px;
+            background: rgba(57, 255, 20, 0.05);
+            border-left: 2px solid var(--neon-green);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .hero-description {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 25px;
+            max-width: 500px;
+        }
+
+        .hero-description strong {
+            color: var(--neon-cyan);
+            font-weight: 600;
+        }
+
+        .hero-tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .tech-tag {
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            padding: 5px 12px;
+            border-radius: 4px;
+            background: rgba(0, 240, 255, 0.06);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            color: var(--neon-cyan);
+            transition: all 0.3s ease;
+        }
+
+        .tech-tag:active {
+            background: rgba(0, 240, 255, 0.15);
+            transform: scale(0.95);
+        }
+
+        .hero-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            background: var(--gradient-1);
+            color: var(--darker-bg);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:active::after {
+            left: 100%;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            background: transparent;
+            color: var(--neon-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:active {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: var(--neon-cyan);
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-stat-label {
+            font-family: 'Fira Code', monospace;
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Floating Code Snippet */
+        .floating-code {
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .floating-code-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .floating-code-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .floating-code-dot.red { background: #ff5f56; }
+        .floating-code-dot.yellow { background: #ffbd2e; }
+        .floating-code-dot.green { background: #27ca40; }
+
+        .code-line {
+            line-height: 1.8;
+            white-space: nowrap;
+        }
+
+        .code-keyword { color: #ff79c6; }
+        .code-class { color: var(--neon-cyan); }
+        .code-string { color: var(--neon-green); }
+        .code-comment { color: #6272a4; }
+        .code-method { color: var(--neon-yellow); }
+        .code-number { color: #bd93f9; }
+
+        /* About Section */
+        .about {
+            background: linear-gradient(180deg, var(--dark-bg) 0%, rgba(0, 240, 255, 0.02) 50%, var(--dark-bg) 100%);
+        }
+
+        .about-origin {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-origin::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--gradient-1);
+        }
+
+        .about-origin-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .about-origin p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .about-origin p strong {
+            color: var(--text-primary);
+        }
+
+        .about-quote {
+            background: rgba(255, 0, 229, 0.05);
+            border-left: 3px solid var(--neon-magenta);
+            padding: 15px;
+            border-radius: 0 10px 10px 0;
+            margin-top: 15px;
+        }
+
+        .about-quote p {
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            color: var(--neon-magenta);
+            font-style: italic;
+            margin: 0;
+        }
+
+        .about-timeline {
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .about-timeline::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background: linear-gradient(180deg, var(--neon-cyan), var(--neon-magenta), var(--neon-green));
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+            padding-left: 15px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .timeline-item:nth-child(2)::before { background: var(--neon-magenta); box-shadow: 0 0 10px var(--neon-magenta); }
+        .timeline-item:nth-child(3)::before { background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+        .timeline-item:nth-child(4)::before { background: var(--neon-yellow); box-shadow: 0 0 10px var(--neon-yellow); }
+
+        .timeline-year {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            color: var(--neon-cyan);
+            margin-bottom: 4px;
+        }
+
+        .timeline-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .timeline-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Skills Section */
+        .skills {
+            background: linear-gradient(180deg, var(--dark-bg) 0%, rgba(255, 0, 229, 0.02) 50%, var(--dark-bg) 100%);
+        }
+
+        .skills-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .skill-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+        }
+
+        .skill-card.lang::before { background: var(--gradient-1); }
+        .skill-card.web::before { background: var(--gradient-2); }
+        .skill-card.tools::before { background: var(--gradient-3); }
+
+        .skill-card:active {
+            transform: scale(0.98);
+            border-color: rgba(0, 240, 255, 0.3);
+        }
+
+        .skill-card-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .skill-card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .skill-card-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .skill-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .skill-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 6px;
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+        }
+
+        .skill-level {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .skill-level.expert { background: rgba(57, 255, 20, 0.15); color: var(--neon-green); }
+        .skill-level.advanced { background: rgba(0, 240, 255, 0.15); color: var(--neon-cyan); }
+        .skill-level.intermediate { background: rgba(255, 230, 0, 0.15); color: var(--neon-yellow); }
+        .skill-level.learning { background: rgba(255, 0, 229, 0.15); color: var(--neon-magenta); }
+
+        /* Skill Bars */
+        .skill-bars {
+            margin-top: 25px;
+        }
+
+        .skill-bar-item {
+            margin-bottom: 15px;
+        }
+
+        .skill-bar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .skill-bar-name {
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            color: var(--text-primary);
+        }
+
+        .skill-bar-percent {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            color: var(--neon-cyan);
+        }
+
+        .skill-bar-track {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 240, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .skill-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+        }
+
+        .skill-bar-fill.cyan { background: var(--gradient-1); }
+        .skill-bar-fill.magenta { background: var(--gradient-2); }
+        .skill-bar-fill.green { background: var(--gradient-3); }
+
+        /* Projects Section */
+        .projects {
+            background: linear-gradient(180deg, var(--dark-bg) 0%, rgba(57, 255, 20, 0.02) 50%, var(--dark-bg) 100%);
+        }
+
+        .projects-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .project-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .project-card:active {
+            transform: scale(0.98);
+        }
+
+        .project-card-header {
+            padding: 18px 18px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .project-card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .project-card-icon.calc { background: rgba(0, 240, 255, 0.1); }
+        .project-card-icon.color { background: rgba(255, 0, 229, 0.1); }
+        .project-card-icon.stop { background: rgba(57, 255, 20, 0.1); }
+        .project-card-icon.pass { background: rgba(255, 102, 0, 0.1); }
+        .project-card-icon.mark { background: rgba(189, 147, 249, 0.1); }
+        .project-card-icon.pixel { background: rgba(255, 230, 0, 0.1); }
+
+        .project-status {
+            font-family: 'Fira Code', monospace;
+            font-size: 9px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(57, 255, 20, 0.1);
+            color: var(--neon-green);
+            border: 1px solid rgba(57, 255, 20, 0.2);
+        }
+
+        .project-card-body {
+            padding: 12px 18px 18px;
+        }
+
+        .project-card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .project-card-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .project-tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        .project-tech {
+            font-family: 'Fira Code', monospace;
+            font-size: 10px;
+            padding: 3px 8px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+
+        /* Interactive Project Demos */
+        .project-demo {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.08);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        /* Calculator */
+        .calc-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            text-align: right;
+            font-family: 'Fira Code', monospace;
+            font-size: 22px;
+            color: var(--neon-cyan);
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            overflow: hidden;
+        }
+
+        .calc-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .calc-btn {
+            padding: 12px;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            background: rgba(0, 240, 255, 0.04);
+            color: var(--text-primary);
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .calc-btn:active {
+            background: rgba(0, 240, 255, 0.15);
+            transform: scale(0.95);
+        }
+
+        .calc-btn.operator {
+            background: rgba(255, 0, 229, 0.08);
+            border-color: rgba(255, 0, 229, 0.2);
+            color: var(--neon-magenta);
+        }
+
+        .calc-btn.equals {
+            background: var(--gradient-1);
+            color: var(--darker-bg);
+            font-weight: 700;
+        }
+
+        .calc-btn.clear {
+            background: rgba(255, 102, 0, 0.08);
+            border-color: rgba(255, 102, 0, 0.2);
+            color: var(--neon-orange);
+        }
+
+        /* Color Palette Generator */
+        .palette-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .palette-colors {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .palette-color {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+
+        .palette-color:active {
+            transform: scale(0.9);
+        }
+
+        .palette-color-label {
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Fira Code', monospace;
+            font-size: 8px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .palette-btn {
+            padding: 10px;
+            background: var(--gradient-2);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        /* Stopwatch */
+        .stopwatch-display {
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--neon-green);
+            margin: 15px 0;
+            text-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
+        }
+
+        .stopwatch-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .stopwatch-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid rgba(57, 255, 20, 0.2);
+            background: rgba(57, 255, 20, 0.05);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .stopwatch-btn.stop-btn {
+            border-color: rgba(255, 0, 229, 0.2);
+            background: rgba(255, 0, 229, 0.05);
+            color: var(--neon-magenta);
+        }
+
+        .stopwatch-btn.reset-btn {
+            border-color: rgba(255, 102, 0, 0.2);
+            background: rgba(255, 102, 0, 0.05);
+            color: var(--neon-orange);
+        }
+
+        /* Password Generator */
+        .password-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 102, 0, 0.15);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            color: var(--neon-orange);
+            margin-bottom: 10px;
+            word-break: break-all;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .password-copy-btn {
+            background: none;
+            border: none;
+            color: var(--neon-cyan);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+            flex-shrink: 0;
+        }
+
+        .password-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .password-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .password-slider {
+            width: 100%;
+            margin: 8px 0;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: rgba(255, 102, 0, 0.15);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .password-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--neon-orange);
+            cursor: pointer;
+        }
+
+        .password-strength {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .strength-bar {
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: background 0.3s ease;
+        }
+
+        .strength-bar.active.weak { background: #ff4444; }
+        .strength-bar.active.medium { background: var(--neon-yellow); }
+        .strength-bar.active.strong { background: var(--neon-green); }
+
+        .gen-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #ff6600, #ff00e5);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch.active {
+            background: rgba(0, 240, 255, 0.3);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(20px);
+            background: var(--neon-cyan);
+        }
+
+        /* Markdown Previewer */
+        .markdown-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .markdown-input {
+            width: 100%;
+            min-height: 100px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(189, 147, 249, 0.15);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            color: var(--text-primary);
+            resize: vertical;
+            outline: none;
+        }
+
+        .markdown-input:focus {
+            border-color: rgba(189, 147, 249, 0.4);
+        }
+
+        .markdown-preview {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(189, 147, 249, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
+            line-height: 1.7;
+            min-height: 80px;
+        }
+
+        .markdown-preview h1, .markdown-preview h2, .markdown-preview h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-cyan);
+            margin: 8px 0;
+        }
+
+        .markdown-preview h1 { font-size: 20px; }
+        .markdown-preview h2 { font-size: 17px; }
+        .markdown-preview h3 { font-size: 15px; }
+
+        .markdown-preview code {
+            background: rgba(0, 240, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            color: var(--neon-magenta);
+        }
+
+        .markdown-preview strong { color: var(--neon-cyan); }
+        .markdown-preview em { color: var(--neon-magenta); }
+
+        /* Pixel Art Canvas */
+        .pixel-canvas-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .pixel-tools {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pixel-color-input {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            -webkit-appearance: none;
+            padding: 0;
+        }
+
+        .pixel-color-input::-webkit-color-swatch-wrapper { padding: 0; }
+        .pixel-color-input::-webkit-color-swatch { border: none; border-radius: 6px; }
+
+        .pixel-preset-colors {
+            display: flex;
+            gap: 4px;
+        }
+
+        .pixel-preset {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        .pixel-preset.active {
+            border-color: white;
+        }
+
+        .pixel-canvas {
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            gap: 1px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 230, 0, 0.15);
+            border-radius: 8px;
+            padding: 4px;
+            touch-action: none;
+        }
+
+        .pixel-cell {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 1px;
+            cursor: pointer;
+            transition: background 0.1s ease;
+        }
+
+        .pixel-canvas-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pixel-btn {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid rgba(255, 230, 0, 0.2);
+            background: rgba(255, 230, 0, 0.05);
+            color: var(--neon-yellow);
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* Code Vault Section */
+        .vault {
+            background: linear-gradient(180deg, var(--dark-bg) 0%, rgba(255, 102, 0, 0.02) 50%, var(--dark-bg) 100%);
+        }
+
+        .vault-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .vault-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 102, 0, 0.15);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .vault-card-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: rgba(255, 0, 229, 0.15);
+            color: var(--neon-magenta);
+            border: 1px solid rgba(255, 0, 229, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .vault-card-content {
+            padding: 22px 18px;
+        }
+
+        .vault-card-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .vault-card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .vault-card-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .vault-card-features {
+            list-style: none;
+            margin-bottom: 18px;
+        }
+
+        .vault-card-features li {
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .vault-card-features li::before {
+            content: '▹';
+            color: var(--neon-cyan);
+        }
+
+        .vault-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 18px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .vault-price {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--neon-cyan);
+        }
+
+        .vault-price .currency {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .vault-buy-btn {
+            padding: 10px 20px;
+            background: var(--gradient-1);
+            color: var(--darker-bg);
+            border: none;
+            border-radius: 6px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+        }
+
+        /* Fun Zone */
+        .funzone {
+            background: linear-gradient(180deg, var(--dark-bg) 0%, rgba(189, 147, 249, 0.02) 50%, var(--dark-bg) 100%);
+        }
+
+        .fun-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .fun-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(189, 147, 249, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .fun-card-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .fun-card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .fun-card-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        /* Impossible Button */
+        .impossible-btn-container {
+            position: relative;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .impossible-btn {
+            padding: 12px 24px;
+            background: var(--gradient-2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: absolute;
+        }
+
+        .impossible-msg {
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            color: var(--neon-magenta);
+            margin-top: 10px;
+            min-height: 18px;
+        }
+
+        /* Vibe Check */
+        .vibe-result {
+            font-size: 48px;
+            margin: 10px 0;
+            min-height: 60px;
+        }
+
+        .vibe-text {
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            color: var(--neon-cyan);
+            margin-bottom: 15px;
+            min-height: 20px;
+        }
+
+        .vibe-btn {
+            padding: 12px 24px;
+            background: var(--gradient-3);
+            color: var(--darker-bg);
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Excuse Generator */
+        .excuse-display {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 230, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            color: var(--neon-yellow);
+            line-height: 1.7;
+            margin-bottom: 15px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .excuse-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--neon-yellow), var(--neon-orange));
+            color: var(--darker-bg);
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Code Fortune Teller */
+        .fortune-orb {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(189, 147, 249, 0.3) 0%, rgba(189, 147, 249, 0.05) 70%);
+            border: 2px solid rgba(189, 147, 249, 0.3);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .fortune-text {
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            color: #bd93f9;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .fortune-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #bd93f9, #ff79c6);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Personality Section */
+        .personality {
+            background: linear-gradient(180deg, var(--dark-bg) 0%, rgba(0, 240, 255, 0.02) 50%, var(--dark-bg) 100%);
+        }
+
+        .personality-meters {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 30px;
+        }
+
+        .personality-meter {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 240, 255, 0.08);
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .meter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .meter-label {
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .meter-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .meter-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .meter-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 2s ease;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .testimonial-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 240, 255, 0.08);
+            border-radius: 14px;
+            padding: 18px;
+            position: relative;
+        }
+
+        .testimonial-card::before {
+            content: '"';
+            font-family: 'Orbitron', sans-serif;
+            font-size: 40px;
+            position: absolute;
+            top: 5px;
+            right: 15px;
+            color: rgba(0, 240, 255, 0.08);
+        }
+
+        .testimonial-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .testimonial-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .testimonial-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .testimonial-role {
+            font-family: 'Fira Code', monospace;
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        /* Contact / Footer */
+        .footer {
+            background: var(--darker-bg);
+            padding: 40px 20px 30px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            border-top: 1px solid rgba(0, 240, 255, 0.1);
+        }
+
+        .footer-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .footer-tagline {
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .footer-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            background: rgba(0, 240, 255, 0.03);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-link:active {
+            background: rgba(0, 240, 255, 0.1);
+            transform: scale(0.95);
+        }
+
+        .footer-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .footer-stat {
+            padding: 12px;
+            background: rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(0, 240, 255, 0.08);
+            border-radius: 8px;
+        }
+
+        .footer-stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+        }
+
+        .footer-stat-label {
+            font-family: 'Fira Code', monospace;
+            font-size: 9px;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        .footer-bottom {
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .footer-copyright {
+            font-family: 'Fira Code', monospace;
+            font-size: 10px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .footer-copyright .heart {
+            color: var(--neon-magenta);
+            animation: heartbeat 1.5s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Scroll to top button */
+        .scroll-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--gradient-1);
+            color: var(--darker-bg);
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 240, 255, 0.3);
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(10, 10, 15, 0.95);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            color: var(--neon-cyan);
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            backdrop-filter: blur(20px);
+        }
+
+        .toast.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-in-left {
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: all 0.6s ease;
+        }
+
+        .slide-in-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-in-right {
+            opacity: 0;
+            transform: translateX(30px);
+            transition: all 0.6s ease;
+        }
+
+        .slide-in-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Glitch effect */
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            animation: glitch-1 2s infinite linear alternate-reverse;
+            clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+            -webkit-text-fill-color: #ff00e5;
+        }
+
+        .glitch::after {
+            animation: glitch-2 3s infinite linear alternate-reverse;
+            clip-path: polygon(0 66%, 100% 66%, 100% 100%, 0 100%);
+            -webkit-text-fill-color: #00f0ff;
+        }
+
+        @keyframes glitch-1 {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-2px); }
+            40% { transform: translateX(2px); }
+            60% { transform: translateX(-1px); }
+            80% { transform: translateX(1px); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes glitch-2 {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(2px); }
+            40% { transform: translateX(-2px); }
+            60% { transform: translateX(1px); }
+            80% { transform: translateX(-1px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Particle effect styles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            animation: particle-float linear infinite;
+        }
+
+        @keyframes particle-float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 400px) {
+            .hero h1 { font-size: 42px; }
+            .section-title { font-size: 32px; }
+            .hero-buttons { flex-direction: row; }
+        }
+
+        @media (min-width: 500px) {
+            section { padding: 80px 30px 40px; }
+            .hero h1 { font-size: 48px; }
+        }
+
+        /* Checkbox hidden style */
+        .hidden-checkbox {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader-text" id="loaderText">Initializing Pavit.exe...</div>
+        <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+        <div class="loader-percentage" id="loaderPercentage">0%</div>
+    </div>
+
+    <!-- Background Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav-logo">PS<span>.</span></div>
+        <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#hero" onclick="toggleMenu()">🏠 Home</a>
+        <a href="#about" onclick="toggleMenu()">👤 About</a>
+        <a href="#skills" onclick="toggleMenu()">⚡ Skills</a>
+        <a href="#projects" onclick="toggleMenu()">🚀 Projects</a>
+        <a href="#vault" onclick="toggleMenu()">🏪 Code Vault</a>
+        <a href="#funzone" onclick="toggleMenu()">🎮 Fun Zone</a>
+        <a href="#personality" onclick="toggleMenu()">🧬 Personality</a>
+        <a href="#footer" onclick="toggleMenu()">📬 Contact</a>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-badge fade-in">
+            <span class="dot"></span>
+            Available for collaborations
+        </div>
+        
+        <h1 class="fade-in">
+            <span class="line1">I'm</span>
+            <span class="line2 glitch" data-text="Pavit Singh">Pavit Singh</span>
+            <span class="line3">Developer.</span>
+        </h1>
+
+        <div class="hero-tagline fade-in">
+            // A developer so good, even bugs fear him! 🐛💀
+        </div>
+
+        <p class="hero-description fade-in">
+            A <strong>14-year-old architect of digital realities</strong> from Meerut, India. 
+            I craft immersive web experiences with code that's as clean as it is powerful.
+        </p>
+
+        <div class="hero-tech-tags fade-in">
+            <span class="tech-tag">Python 🐍</span>
+            <span class="tech-tag">C++ ⚡</span>
+            <span class="tech-tag">JavaScript 🌐</span>
+            <span class="tech-tag">Three.js 🎮</span>
+            <span class="tech-tag">GSAP ✨</span>
+            <span class="tech-tag">WebGL 🔮</span>
+        </div>
+
+        <div class="hero-buttons fade-in">
+            <a href="#projects" class="btn-primary">🚀 View My Projects</a>
+            <a href="#about" class="btn-secondary">📖 My Story</a>
+        </div>
+
+        <div class="hero-stats fade-in">
+            <div class="hero-stat">
+                <div class="hero-stat-number">4+</div>
+                <div class="hero-stat-label">Years Coding</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-number">20+</div>
+                <div class="hero-stat-label">Projects</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-number">∞</div>
+                <div class="hero-stat-label">Passion</div>
+            </div>
+        </div>
+
+        <div class="floating-code fade-in">
+            <div class="floating-code-header">
+                <span class="floating-code-dot red"></span>
+                <span class="floating-code-dot yellow"></span>
+                <span class="floating-code-dot green"></span>
+            </div>
+            <div class="code-line"><span class="code-keyword">class</span> <span class="code-class">PavitSingh</span> {</div>
+            <div class="code-line">&nbsp;&nbsp;<span class="code-method">constructor</span>() {</div>
+            <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">this</span>.age = <span class="code-number">14</span>;</div>
+            <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">this</span>.passion = <span class="code-string">"∞"</span>;</div>
+            <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">this</span>.sleep = <span class="code-number">null</span>; <span class="code-comment">// who needs it?</span></div>
+            <div class="code-line">&nbsp;&nbsp;}</div>
+            <div class="code-line">&nbsp;&nbsp;<span class="code-method">code</span>() { <span class="code-keyword">return</span> <span class="code-string">"magic ✨"</span>; }</div>
+            <div class="code-line">}</div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+        <div class="section-tag fade-in">// about.me</div>
+        <h2 class="section-title fade-in">
+            <span class="gradient-text">Origin</span> Story 📖
+        </h2>
+
+        <div class="about-origin fade-in">
+            <div class="about-origin-title">🌟 The Beginning</div>
+            <p>
+                It all started when I was <strong>10 years old</strong>, staring at a screen that read 
+                <code style="color: var(--neon-green); background: rgba(57,255,20,0.08); padding: 2px 6px; border-radius: 3px; font-family: 'Fira Code', monospace; font-size: 13px;">Hello World</code> — 
+                my first HTML creation. That moment sparked something that would become my entire universe.
+            </p>
+            <p>
+                Four years later, I've evolved from writing basic HTML to building <strong>full-stack applications</strong>, 
+                3D web experiences, and everything in between. Every line of code is a step towards my mission: 
+                to <strong>engineer immersive digital experiences</strong> that push boundaries.
+            </p>
+            <div class="about-quote">
+                <p>"Age is just a syntax error — it doesn't stop the code from running."</p>
+            </div>
+        </div>
+
+        <div class="about-timeline fade-in">
+            <div class="timeline-item">
+                <div class="timeline-year">Age 10 — 2020</div>
+                <div class="timeline-title">First "Hello World" 🌱</div>
+                <div class="timeline-desc">Wrote my first HTML page and fell in love with the idea that I could create things on a screen.</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">Age 11 — 2021</div>
+                <div class="timeline-title">Python Discovery 🐍</div>
+                <div class="timeline-desc">Discovered Python and started building small automation scripts and simple games.</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">Age 12 — 2022</div>
+                <div class="timeline-title">Full-Stack Journey 🚀</div>
+                <div class="timeline-desc">Dove into JavaScript, learned React, and built my first full-stack web application.</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">Age 14 — Now</div>
+                <div class="timeline-title">Digital Architect 🏛️</div>
+                <div class="timeline-desc">Building 3D experiences with Three.js, exploring AI/ML, and pushing the limits of web technology.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section class="skills" id="skills">
+        <div class="section-tag fade-in">// skills.json</div>
+        <h2 class="section-title fade-in">
+            <span class="gradient-text-2">Tech</span> Arsenal ⚡
+        </h2>
+
+        <div class="skills-grid">
+            <div class="skill-card lang fade-in">
+                <div class="skill-card-icon">💻</div>
+                <div class="skill-card-title">Programming Languages</div>
+                <div class="skill-card-subtitle">The foundations of my craft</div>
+                <div class="skill-items">
+                    <div class="skill-item">Python <span class="skill-level expert">Expert</span></div>
+                    <div class="skill-item">C/C++ <span class="skill-level advanced">Advanced</span></div>
+                    <div class="skill-item">Java <span class="skill-level intermediate">Intermediate</span></div>
+                </div>
+            </div>
+
+            <div class="skill-card web fade-in">
+                <div class="skill-card-icon">🌐</div>
+                <div class="skill-card-title">Web Technologies</div>
+                <div class="skill-card-subtitle">Where creativity meets code</div>
+                <div class="skill-items">
+                    <div class="skill-item">HTML/CSS/JS <span class="skill-level expert">Expert</span></div>
+                    <div class="skill-item">Three.js <span class="skill-level advanced">Advanced</span></div>
+                    <div class="skill-item">GSAP <span class="skill-level advanced">Advanced</span></div>
+                    <div class="skill-item">WebGL <span class="skill-level intermediate">Intermediate</span></div>
+                </div>
+            </div>
+
+            <div class="skill-card tools fade-in">
+                <div class="skill-card-icon">🛠️</div>
+                <div class="skill-card-title">Tools & Learning</div>
+                <div class="skill-card-subtitle">Always expanding my toolkit</div>
+                <div class="skill-items">
+                    <div class="skill-item">Git/GitHub <span class="skill-level advanced">Advanced</span></div>
+                    <div class="skill-item">VS Code <span class="skill-level expert">Expert</span></div>
+                    <div class="skill-item">AI/ML <span class="skill-level learning">Learning</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="skill-bars fade-in">
+            <div class="skill-bar-item">
+                <div class="skill-bar-header">
+                    <span class="skill-bar-name">🐍 Python</span>
+                    <span class="skill-bar-percent">95%</span>
+                </div>
+                <div class="skill-bar-track">
+                    <div class="skill-bar-fill cyan" style="width: 0%" data-width="95%"></div>
+                </div>
+            </div>
+            <div class="skill-bar-item">
+                <div class="skill-bar-header">
+                    <span class="skill-bar-name">🌐 HTML/CSS/JS</span>
+                    <span class="skill-bar-percent">92%</span>
+                </div>
+                <div class="skill-bar-track">
+                    <div class="skill-bar-fill magenta" style="width: 0%" data-width="92%"></div>
+                </div>
+            </div>
+            <div class="skill-bar-item">
+                <div class="skill-bar-header">
+                    <span class="skill-bar-name">⚡ C/C++</span>
+                    <span class="skill-bar-percent">82%</span>
+                </div>
+                <div class="skill-bar-track">
+                    <div class="skill-bar-fill green" style="width: 0%" data-width="82%"></div>
+                </div>
+            </div>
+            <div class="skill-bar-item">
+                <div class="skill-bar-header">
+                    <span class="skill-bar-name">🎮 Three.js/WebGL</span>
+                    <span class="skill-bar-percent">78%</span>
+                </div>
+                <div class="skill-bar-track">
+                    <div class="skill-bar-fill cyan" style="width: 0%" data-width="78%"></div>
+                </div>
+            </div>
+            <div class="skill-bar-item">
+                <div class="skill-bar-header">
+                    <span class="skill-bar-name">🤖 AI/ML</span>
+                    <span class="skill-bar-percent">40%</span>
+                </div>
+                <div class="skill-bar-track">
+                    <div class="skill-bar-fill magenta" style="width: 0%" data-width="40%"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section class="projects" id="projects">
+        <div class="section-tag fade-in">// projects.build()</div>
+        <h2 class="section-title fade-in">
+            <span class="gradient-text">Live</span> Projects 🚀
+        </h2>
+
+        <div class="projects-grid">
+            <!-- Calculator -->
+            <div class="project-card fade-in">
+                <div class="project-card-header">
+                    <div class="project-card-icon calc">🧮</div>
+                    <span class="project-status">● LIVE</span>
+                </div>
+                <div class="project-card-body">
+                    <div class="project-card-title">Smart Calculator</div>
+                    <div class="project-card-desc">A sleek, functional calculator with a retro-futuristic design. Try it below!</div>
+                    <div class="project-tech-stack">
+                        <span class="project-tech">JavaScript</span>
+                        <span class="project-tech">CSS Grid</span>
+                        <span class="project-tech">Math</span>
+                    </div>
+                    <div class="project-demo">
+                        <div class="calc-display" id="calcDisplay">0</div>
+                        <div class="calc-buttons">
+                            <button class="calc-btn clear" onclick="calcClear()">C</button>
+                            <button class="calc-btn operator" onclick="calcInput('(')">(</button>
+                            <button class="calc-btn operator" onclick="calcInput(')')">)</button>
+                            <button class="calc-btn operator" onclick="calcInput('/')">÷</button>
+                            <button class="calc-btn" onclick="calcInput('7')">7</button>
+                            <button class="calc-btn" onclick="calcInput('8')">8</button>
+                            <button class="calc-btn" onclick="calcInput('9')">9</button>
+                            <button class="calc-btn operator" onclick="calcInput('*')">×</button>
+                            <button class="calc-btn" onclick="calcInput('4')">4</button>
+                            <button class="calc-btn" onclick="calcInput('5')">5</button>
+                            <button class="calc-btn" onclick="calcInput('6')">6</button>
+                            <button class="calc-btn operator" onclick="calcInput('-')">−</button>
+                            <button class="calc-btn" onclick="calcInput('1')">1</button>
+                            <button class="calc-btn" onclick="calcInput('2')">2</button>
+                            <button class="calc-btn" onclick="calcInput('3')">3</button>
+                            <button class="calc-btn operator" onclick="calcInput('+')">+</button>
+                            <button class="calc-btn" onclick="calcInput('0')">0</button>
+                            <button class="calc-btn" onclick="calcInput('.')">.</button>
+                            <button class="calc-btn clear" onclick="calcBackspace()">⌫</button>
+                            <button class="calc-btn equals" onclick="calcEquals()">=</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Color Palette Generator -->
+            <div class="project-card fade-in">
+                <div class="project-card-header">
+                    <div class="project-card-icon color">🎨</div>
+                    <span class="project-status">● LIVE</span>
+                </div>
+                <div class="project-card-body">
+                    <div class="project-card-title">Color Palette Generator</div>
+                    <div class="project-card-desc">Generate beautiful random color palettes. Tap a color to copy its hex code!</div>
+                    <div class="project-tech-stack">
+                        <span class="project-tech">JavaScript</span>
+                        <span class="project-tech">Color Theory</span>
+                    </div>
+                    <div class="project-demo">
+                        <div class="palette-colors" id="paletteColors">
+                            <div class="palette-color" style="background: #ff6b6b;" onclick="copyColor('#ff6b6b')">
+                                <span class="palette-color-label">#ff6b6b</span>
+                            </div>
+                            <div class="palette-color" style="background: #4ecdc4;" onclick="copyColor('#4ecdc4')">
+                                <span class="palette-color-label">#4ecdc4</span>
+                            </div>
+                            <div class="palette-color" style="background: #45b7d1;" onclick="copyColor('#45b7d1')">
+                                <span class="palette-color-label">#45b7d1</span>
+                            </div>
+                            <div class="palette-color" style="background: #f9ca24;" onclick="copyColor('#f9ca24')">
+                                <span class="palette-color-label">#f9ca24</span>
+                            </div>
+                            <div class="palette-color" style="background: #6c5ce7;" onclick="copyColor('#6c5ce7')">
+                                <span class="palette-color-label">#6c5ce7</span>
+                            </div>
+                        </div>
+                        <button class="palette-btn" onclick="generatePalette()">🎲 Generate New Palette</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stopwatch -->
+            <div class="project-card fade-in">
+                <div class="project-card-header">
+                    <div class="project-card-icon stop">⏱️</div>
+                    <span class="project-status">● LIVE</span>
+                </div>
+                <div class="project-card-body">
+                    <div class="project-card-title">Precision Stopwatch</div>
+                    <div class="project-card-desc">A high-precision stopwatch with millisecond accuracy.</div>
+                    <div class="project-tech-stack">
+                        <span class="project-tech">JavaScript</span>
+                        <span class="project-tech">setInterval</span>
+                    </div>
+                    <div class="project-demo">
+                        <div class="stopwatch-display" id="stopwatchDisplay">00:00:00.000</div>
+                        <div class="stopwatch-buttons">
+                            <button class="stopwatch-btn" onclick="stopwatchStart()" id="stopwatchStartBtn">▶ Start</button>
+                            <button class="stopwatch-btn stop-btn" onclick="stopwatchStop()">⏸ Stop</button>
+                            <button class="stopwatch-btn reset-btn" onclick="stopwatchReset()">↺ Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Generator -->
+            <div class="project-card fade-in">
+                <div class="project-card-header">
+                    <div class="project-card-icon pass">🔐</div>
+                    <span class="project-status">● LIVE</span>
+                </div>
+                <div class="project-card-body">
+                    <div class="project-card-title">Secure Password Generator</div>
+                    <div class="project-card-desc">Generate cryptographically inspired passwords with customizable options.</div>
+                    <div class="project-tech-stack">
+                        <span class="project-tech">JavaScript</span>
+                        <span class="project-tech">Crypto</span>
+                    </div>
+                    <div class="project-demo">
+                        <div class="password-display">
+                            <span id="passwordOutput">Click generate →</span>
+                            <button class="password-copy-btn" onclick="copyPassword()">📋</button>
+                        </div>
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-bar"></div>
+                            <div class="strength-bar"></div>
+                            <div class="strength-bar"></div>
+                            <div class="strength-bar"></div>
+                        </div>
+                        <div class="password-options">
+                            <div class="password-option">
+                                <span>Length: <strong id="passLengthVal">16</strong></span>
+                            </div>
+                            <input type="range" class="password-slider" id="passLength" min="8" max="32" value="16" oninput="updatePassLength()">
+                            <div class="password-option">
+                                <span>Include Uppercase</span>
+                                <div class="toggle-switch active" id="passUpper" onclick="toggleSwitch(this)"></div>
+                            </div>
+                            <div class="password-option">
+                                <span>Include Numbers</span>
+                                <div class="toggle-switch active" id="passNumbers" onclick="toggleSwitch(this)"></div>
+                            </div>
+                            <div class="password-option">
+                                <span>Include Symbols</span>
+                                <div class="toggle-switch active" id="passSymbols" onclick="toggleSwitch(this)"></div>
+                            </div>
+                        </div>
+                        <button class="gen-btn" onclick="generatePassword()">⚡ Generate Password</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Markdown Previewer -->
+            <div class="project-card fade-in">
+                <div class="project-card-header">
+                    <div class="project-card-icon mark">📝</div>
+                    <span class="project-status">● LIVE</span>
+                </div>
+                <div class="project-card-body">
+                    <div class="project-card-title">Markdown Previewer</div>
+                    <div class="project-card-desc">Write markdown and see it render in real-time. Supports headers, bold, italic, and code.</div>
+                    <div class="project-tech-stack">
+                        <span class="project-tech">JavaScript</span>
+                        <span class="project-tech">Regex</span>
+                        <span class="project-tech">Markdown</span>
+                    </div>
+                    <div class="project-demo">
+                        <div class="markdown-container">
+                            <textarea class="markdown-input" id="markdownInput" oninput="renderMarkdown()" placeholder="Type markdown here...">## Hello World! 🌍
+
+This is **bold** and this is *italic*.
+
+Here's some `inline code`.
+
+### Features:
+- Real-time preview
+- Clean rendering
+- Made by **Pavit Singh** 🚀</textarea>
+                            <div class="markdown-preview" id="markdownPreview"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pixel Art Canvas -->
+            <div class="project-card fade-in">
+                <div class="project-card-header">
+                    <div class="project-card-icon pixel">🎨</div>
+                    <span class="project-status">● LIVE</span>
+                </div>
+                <div class="project-card-body">
+                    <div class="project-card-title">Pixel Art Canvas</div>
+                    <div class="project-card-desc">Draw pixel art on a 16×16 grid. Choose colors and let your creativity flow!</div>
+                    <div class="project-tech-stack">
+                        <span class="project-tech">JavaScript</span>
+                        <span class="project-tech">CSS Grid</span>
+                        <span class="project-tech">Touch Events</span>
+                    </div>
+                    <div class="project-demo">
+                        <div class="pixel-canvas-container">
+                            <div class="pixel-tools">
+                                <input type="color" class="pixel-color-input" id="pixelColor" value="#00f0ff">
+                                <div class="pixel-preset-colors">
+                                    <div class="pixel-preset active" style="background: #00f0ff;" onclick="setPixelColor('#00f0ff', this)"></div>
+                                    <div class="pixel-preset" style="background: #ff00e5;" onclick="setPixelColor('#ff00e5', this)"></div>
+                                    <div class="pixel-preset" style="background: #39ff14;" onclick="setPixelColor('#39ff14', this)"></div>
+                                    <div class="pixel-preset" style="background: #ffe600;" onclick="setPixelColor('#ffe600', this)"></div>
+                                    <div class="pixel-preset" style="background: #ff6600;" onclick="setPixelColor('#ff6600', this)"></div>
+                                    <div class="pixel-preset" style="background: #ffffff;" onclick="setPixelColor('#ffffff', this)"></div>
+                                </div>
+                            </div>
+                            <div class="pixel-canvas" id="pixelCanvas"></div>
+                            <div class="pixel-canvas-btns">
+                                <button class="pixel-btn" onclick="clearPixelCanvas()">🗑️ Clear</button>
+                                <button class="pixel-btn" onclick="randomPixelArt()">🎲 Random</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code Vault Section -->
+    <section class="vault" id="vault">
+        <div class="section-tag fade-in">// vault.store</div>
+        <h2 class="section-title fade-in">
+            <span class="gradient-text-2">Code</span> Vault 🏪
+        </h2>
+
+        <div class="vault-cards">
+            <div class="vault-card fade-in">
+                <span class="vault-card-badge">Popular 🔥</span>
+                <div class="vault-card-content">
+                    <div class="vault-card-icon">🧠</div>
+                    <div class="vault-card-title">Neural-Flow UI Kit</div>
+                    <div class="vault-card-desc">The exact 3D framework powering this website. Create stunning retro-futuristic interfaces with ease.</div>
+                    <ul class="vault-card-features">
+                        <li>50+ Pre-built 3D components</li>
+                        <li>Three.js & GSAP integration</li>
+                        <li>Responsive mobile-first design</li>
+                        <li>Neon glow effects system</li>
+                        <li>Dark theme engine</li>
+                    </ul>
+                </div>
+                <div class="vault-card-footer">
+                    <div class="vault-price"><span class="currency">$</span>49</div>
+                    <button class="vault-buy-btn" onclick="showToast('Coming soon! 🚀')">Get Access →</button>
+                </div>
+            </div>
+
+            <div class="vault-card fade-in">
+                <span class="vault-card-badge">New ✨</span>
+                <div class="vault-card-content">
+                    <div class="vault-card-icon">🐍</div>
+                    <div class="vault-card-title">Python Automation Core</div>
+                    <div class="vault-card-desc">A collection of powerful Python automation scripts and toolkits for everyday developer tasks.</div>
+                    <ul class="vault-card-features">
+                        <li>File system automation</li>
+                        <li>Web scraping toolkit</li>
+                        <li>Data processing pipelines</li>
+                        <li>Email automation suite</li>
+                        <li>CLI tool generator</li>
+                    </ul>
+                </div>
+                <div class="vault-card-footer">
+                    <div class="vault-price"><span class="currency">$</span>29</div>
+                    <button class="vault-buy-btn" onclick="showToast('Coming soon! 🚀')">Get Access →</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fun Zone -->
+    <section class="funzone" id="funzone">
+        <div class="section-tag fade-in">// fun.play()</div>
+        <h2 class="section-title fade-in">
+            <span class="gradient-text">Fun</span> Zone 🎮
+        </h2>
+
+        <div class="fun-grid">
+            <!-- Impossible Button -->
+            <div class="fun-card fade-in">
+                <div class="fun-card-icon">🎯</div>
+                <div class="fun-card-title">The Impossible Button</div>
+                <div class="fun-card-desc">Can you click it? It doesn't want to be clicked!</div>
+                <div class="impossible-btn-container" id="impossibleContainer">
+                    <button class="impossible-btn" id="impossibleBtn" 
+                        onmouseenter="moveImpossibleBtn()" 
+                        ontouchstart="moveImpossibleBtn(event)"
+                        onclick="impossibleClicked()">
+                        Click Me! 😏
+                    </button>
+                </div>
+                <div class="impossible-msg" id="impossibleMsg"></div>
+            </div>
+
+            <!-- Vibe Check -->
+            <div class="fun-card fade-in">
+                <div class="fun-card-icon">✨</div>
+                <div class="fun-card-title">Vibe Check</div>
+                <div class="fun-card-desc">Let me check your current vibe...</div>
+                <div class="vibe-result" id="vibeResult">❓</div>
+                <div class="vibe-text" id="vibeText">Press to check your vibe</div>
+                <button class="vibe-btn" onclick="checkVibe()">🔮 Check My Vibe</button>
+            </div>
+
+            <!-- Excuse Generator -->
+            <div class="fun-card fade-in">
+                <div class="fun-card-icon">🤷</div>
+                <div class="fun-card-title">Excuse Generator</div>
+                <div class="fun-card-desc">Need an excuse for not finishing your code? I got you!</div>
+                <div class="excuse-display" id="excuseDisplay">Press the button for a developer excuse...</div>
+                <button class="excuse-btn" onclick="generateExcuse()">🎲 Generate Excuse</button>
+            </div>
+
+            <!-- Code Fortune Teller -->
+            <div class="fun-card fade-in">
+                <div class="fun-card-icon">🔮</div>
+                <div class="fun-card-title">Code Fortune Teller</div>
+                <div class="fun-card-desc">Gaze into the crystal ball for your coding fortune...</div>
+                <div class="fortune-orb">🔮</div>
+                <div class="fortune-text" id="fortuneText">Tap the orb to reveal your fortune...</div>
+                <button class="fortune-btn" onclick="tellFortune()">✨ Tell My Fortune</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Personality Section -->
+    <section class="personality" id="personality">
+        <div class="section-tag fade-in">// personality.scan()</div>
+        <h2 class="section-title fade-in">
+            <span class="gradient-text-2">System</span> Diagnostics 🧬
+        </h2>
+
+        <div class="personality-meters fade-in">
+            <div class="personality-meter">
+                <div class="meter-header">
+                    <span class="meter-label">⌨️ Coding Addiction</span>
+                    <span class="meter-value" style="color: var(--neon-green);">99%</span>
+                </div>
+                <div class="meter-bar">
+                    <div class="meter-fill" style="width: 0%; background: var(--gradient-3);" data-width="99%"></div>
+                </div>
+            </div>
+            <div class="personality-meter">
+                <div class="meter-header">
+                    <span class="meter-label">☕ Coffee Dependency</span>
+                    <span class="meter-value" style="color: var(--neon-orange);">87%</span>
+                </div>
+                <div class="meter-bar">
+                    <div class="meter-fill" style="width: 0%; background: linear-gradient(90deg, #ff6600, #ff00e5);" data-width="87%"></div>
+                </div>
+            </div>
+            <div class="personality-meter">
+                <div class="meter-header">
+                    <span class="meter-label">🐛 Bug Tolerance</span>
+                    <span class="meter-value" style="color: var(--neon-cyan);">65%</span>
+                </div>
+                <div class="meter-bar">
+                    <div class="meter-fill" style="width: 0%; background: var(--gradient-1);" data-width="65%"></div>
+                </div>
+            </div>
+            <div class="personality-meter">
+                <div class="meter-header">
+                    <span class="meter-label">😴 Sleep Schedule</span>
+                    <span class="meter-value" style="color: var(--neon-magenta);">12%</span>
+                </div>
+                <div class="meter-bar">
+                    <div class="meter-fill" style="width: 0%; background: var(--gradient-2);" data-width="12%"></div>
+                </div>
+            </div>
+            <div class="personality-meter">
+                <div class="meter-header">
+                    <span class="meter-label">🎮 Gaming Skills</span>
+                    <span class="meter-value" style="color: var(--neon-yellow);">76%</span>
+                </div>
+                <div class="meter-bar">
+                    <div class="meter-fill" style="width: 0%; background: linear-gradient(90deg, #ffe600, #39ff14);" data-width="76%"></div>
+                </div>
+            </div>
+            <div class="personality-meter">
+                <div class="meter-header">
+                    <span class="meter-label">🤓 Nerd Level</span>
+                    <span class="meter-value" style="color: #bd93f9;">OVER 9000</span>
+                </div>
+                <div class="meter-bar">
+                    <div class="meter-fill" style="width: 0%; background: linear-gradient(90deg, #bd93f9, #ff79c6);" data-width="100%"></div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-title fade-in" style="font-size: 22px;">
+            <span class="gradient-text">Testimonials</span> 💬
+        </h3>
+
+        <div class="testimonials fade-in">
+            <div class="testimonial-card">
+                <p class="testimonial-text">"He hasn't come out of his room in 3 days. I'm not worried though — I can hear him yelling at something called 'CSS'. At least he eats the food I slide under the door."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar" style="background: rgba(255, 0, 229, 0.15);">👩</div>
+                    <div>
+                        <div class="testimonial-name">Mom</div>
+                        <div class="testimonial-role">Chief Worry Officer</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-text">"I have never been used this much in my entire lifecycle. This kid runs me 24/7. I'm filing a complaint with the appliance union. Send help. And more coffee beans."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar" style="background: rgba(255, 102, 0, 0.15);">☕</div>
+                    <div>
+                        <div class="testimonial-name">Coffee Machine</div>
+                        <div class="testimonial-role">Overworked Employee</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-text">"We tried. We really tried. We showed up in line 47, line 203, even the import statement. But he found us all. Every. Single. Time. We're moving to someone else's code."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar" style="background: rgba(57, 255, 20, 0.15);">🐛</div>
+                    <div>
+                        <div class="testimonial-name">The Bugs</div>
+                        <div class="testimonial-role">Terrified Collective</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-text">"He made me a website for my birthday. I just wanted a cake. But I have to admit, the particle effects were impressive. 5 stars for the 3D confetti."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar" style="background: rgba(0, 240, 255, 0.15);">👨</div>
+                    <div>
+                        <div class="testimonial-name">Dad</div>
+                        <div class="testimonial-role">Beta Tester (involuntary)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+        <div class="footer-logo">PAVIT SINGH</div>
+        <div class="footer-tagline">// 14 y/o developer · Meerut, India 🇮🇳</div>
+
+       
+        <div class="footer-stats">
+            <div class="footer-stat">
+                <div class="footer-stat-value" id="linesOfCode">50K+</div>
+                <div class="footer-stat-label">Lines of Code</div>
+            </div>
+            <div class="footer-stat">
+                <div class="footer-stat-value">∞</div>
+                <div class="footer-stat-label">Cups of Coffee</div>
+            </div>
+            <div class="footer-stat">
+                <div class="footer-stat-value">0</div>
+                <div class="footer-stat-label">Bugs Left</div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p class="footer-copyright">
+                Crafted with <span class="heart">❤️</span> & lots of ☕ by Pavit Singh<br>
+                © 2024 · All rights reserved · Built from scratch<br>
+                <span style="color: var(--neon-cyan);">// No frameworks were harmed in the making of this site</span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scroll to Top -->
+    <button class="scroll-top" id="scrollTop" onclick="scrollToTop()">↑</button>
+
+    <script>
+        // ==========================================
+        // LOADING SCREEN
+        // ==========================================
+        const loadingMessages = [
+            'Initializing Pavit.exe...',
+            'Loading neural networks...',
+            'Compiling awesomeness...',
+            'Injecting caffeine...',
+            'Deploying bugs... wait, no...',
+            'Ready to blow minds! 🚀'
+        ];
+
+        let loadProgress = 0;
+        const loaderText = document.getElementById('loaderText');
+        const loaderPercentage = document.getElementById('loaderPercentage');
+
+        const loadInterval = setInterval(() => {
+            loadProgress += Math.random() * 15 + 5;
+            if (loadProgress > 100) loadProgress = 100;
+            
+            loaderPercentage.textContent = Math.floor(loadProgress) + '%';
+            
+            const msgIndex = Math.min(Math.floor(loadProgress / 20), loadingMessages.length - 1);
+            loaderText.textContent = loadingMessages[msgIndex];
+
+            if (loadProgress >= 100) {
+                clearInterval(loadInterval);
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').classList.add('hidden');
+                    initAnimations();
+                }, 500);
+            }
+        }, 200);
+
+        // ==========================================
+        // BACKGROUND CANVAS
+        // ==========================================
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const gridLines = [];
+        for (let i = 0; i < 30; i++) {
+            gridLines.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                size: Math.random() * 2 + 0.5,
+                opacity: Math.random() * 0.3 + 0.05
+            });
+        }
+
+        function drawBackground() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw floating dots
+            gridLines.forEach(dot => {
+                dot.x += dot.vx;
+                dot.y += dot.vy;
+                
+                if (dot.x < 0 || dot.x > canvas.width) dot.vx *= -1;
+                if (dot.y < 0 || dot.y > canvas.height) dot.vy *= -1;
+                
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 240, 255, ${dot.opacity})`;
+                ctx.fill();
+            });
+
+            // Draw connections
+            for (let i = 0; i < gridLines.length; i++) {
+                for (let j = i + 1; j < gridLines.length; j++) {
+                    const dx = gridLines[i].x - gridLines[j].x;
+                    const dy = gridLines[i].y - gridLines[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(gridLines[i].x, gridLines[i].y);
+                        ctx.lineTo(gridLines[j].x, gridLines[j].y);
+                        ctx.strokeStyle = `rgba(0, 240, 255, ${0.03 * (1 - dist / 150)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(drawBackground);
+        }
+        drawBackground();
+
+        // ==========================================
+        // PARTICLES
+        // ==========================================
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const colors = ['#00f0ff', '#ff00e5', '#39ff14', '#ffe600', '#bd93f9'];
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.animationDuration = (Math.random() * 20 + 15) + 's';
+                particle.style.animationDelay = (Math.random() * 20) + 's';
+                particle.style.width = (Math.random() * 3 + 1) + 'px';
+                particle.style.height = particle.style.width;
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // ==========================================
+        // NAVIGATION
+        // ==========================================
+        let lastScrollTop = 0;
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            document.getElementById('hamburger').classList.toggle('active');
+            document.getElementById('mobileMenu').classList.toggle('active');
+            document.getElementById('menuOverlay').classList.toggle('active');
+            document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+        }
+
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset;
+            const nav = document.getElementById('nav');
+            
+            if (scrollTop > lastScrollTop && scrollTop > 80 && !isMenuOpen) {
+                nav.classList.add('hidden');
+            } else {
+                nav.classList.remove('hidden');
+            }
+            lastScrollTop = scrollTop;
+
+            // Scroll to top button
+            const scrollTopBtn = document.getElementById('scrollTop');
+            if (scrollTop > 500) {
+                scrollTopBtn.classList.add('visible');
+            } else {
+                scrollTopBtn.classList.remove('visible');
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ==========================================
+        // SCROLL ANIMATIONS
+        // ==========================================
+        function initAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        
+                        // Animate skill bars
+                        const bars = entry.target.querySelectorAll('.skill-bar-fill, .meter-fill');
+                        bars.forEach(bar => {
+                            const width = bar.dataset.width;
+                            if (width) {
+                                setTimeout(() => {
+                                    bar.style.width = width;
+                                }, 200);
+                            }
+                        });
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+            document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        // ==========================================
+        // TOAST NOTIFICATIONS
+        // ==========================================
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('visible');
+            setTimeout(() => toast.classList.remove('visible'), 2500);
+        }
+
+        // ==========================================
+        // CALCULATOR
+        // ==========================================
+        let calcExpression = '';
+
+        function calcInput(val) {
+            if (calcExpression === '0' || calcExpression === 'Error') calcExpression = '';
+            calcExpression += val;
+            document.getElementById('calcDisplay').textContent = calcExpression;
+        }
+
+        function calcClear() {
+            calcExpression = '';
+            document.getElementById('calcDisplay').textContent = '0';
+        }
+
+        function calcBackspace() {
+            calcExpression = calcExpression.slice(0, -1);
+            document.getElementById('calcDisplay').textContent = calcExpression || '0';
+        }
+
+        function calcEquals() {
+            try {
+                const result = Function('"use strict"; return (' + calcExpression + ')')();
+                calcExpression = String(result);
+                document.getElementById('calcDisplay').textContent = result;
+            } catch (e) {
+                document.getElementById('calcDisplay').textContent = 'Error';
+                calcExpression = '';
+            }
+        }
+
+        // ==========================================
+        // COLOR PALETTE GENERATOR
+        // ==========================================
+        function generateRandomColor() {
+            return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+        }
+
+        function generatePalette() {
+            const container = document.getElementById('paletteColors');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < 5; i++) {
+                const color = generateRandomColor();
+                const div = document.createElement('div');
+                div.className = 'palette-color';
+                div.style.background = color;
+                div.onclick = () => copyColor(color);
+                div.innerHTML = `<span class="palette-color-label">${color}</span>`;
+                container.appendChild(div);
+            }
+        }
+
+        function copyColor(color) {
+            navigator.clipboard.writeText(color).then(() => {
+                showToast(`Copied ${color} to clipboard! 🎨`);
+            }).catch(() => {
+                showToast(`Color: ${color} 🎨`);
+            });
+        }
+
+        // ==========================================
+        // STOPWATCH
+        // ==========================================
+        let stopwatchInterval = null;
+        let stopwatchTime = 0;
+        let stopwatchRunning = false;
+
+        function formatStopwatchTime(ms) {
+            const hours = Math.floor(ms / 3600000);
+            const minutes = Math.floor((ms % 3600000) / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            const milliseconds = ms % 1000;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`;
+        }
+
+        function stopwatchStart() {
+            if (stopwatchRunning) return;
+            stopwatchRunning = true;
+            const startTime = Date.now() - stopwatchTime;
+            stopwatchInterval = setInterval(() => {
+                stopwatchTime = Date.now() - startTime;
+                document.getElementById('stopwatchDisplay').textContent = formatStopwatchTime(stopwatchTime);
+            }, 10);
+        }
+
+        function stopwatchStop() {
+            stopwatchRunning = false;
+            clearInterval(stopwatchInterval);
+        }
+
+        function stopwatchReset() {
+            stopwatchStop();
+            stopwatchTime = 0;
+            document.getElementById('stopwatchDisplay').textContent = '00:00:00.000';
+        }
+
+        // ==========================================
+        // PASSWORD GENERATOR
+        // ==========================================
+        function updatePassLength() {
+            const val = document.getElementById('passLength').value;
+            document.getElementById('passLengthVal').textContent = val;
+        }
+
+        function toggleSwitch(el) {
+            el.classList.toggle('active');
+        }
+
+        function generatePassword() {
+            const length = parseInt(document.getElementById('passLength').value);
+            const useUpper = document.getElementById('passUpper').classList.contains('active');
+            const useNumbers = document.getElementById('passNumbers').classList.contains('active');
+            const useSymbols = document.getElementById('passSymbols').classList.contains('active');
+
+            let chars = 'abcdefghijklmnopqrstuvwxyz';
+            if (useUpper) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            if (useNumbers) chars += '0123456789';
+            if (useSymbols) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+
+            document.getElementById('passwordOutput').textContent = password;
+
+            // Update strength bars
+            const bars = document.querySelectorAll('#passwordStrength .strength-bar');
+            let strength = 0;
+            if (length >= 12) strength++;
+            if (useUpper) strength++;
+            if (useNumbers) strength++;
+            if (useSymbols) strength++;
+
+            const strengthClasses = ['weak', 'weak', 'medium', 'strong', 'strong'];
+            bars.forEach((bar, i) => {
+                bar.className = 'strength-bar';
+                if (i < strength) {
+                    bar.classList.add('active', strengthClasses[strength]);
+                }
+            });
+        }
+
+        function copyPassword() {
+            const password = document.getElementById('passwordOutput').textContent;
+            if (password && password !== 'Click generate →') {
+                navigator.clipboard.writeText(password).then(() => {
+                    showToast('Password copied! 🔐');
+                }).catch(() => {
+                    showToast('Password: copied! 🔐');
+                });
+            }
+        }
+
+        // ==========================================
+        // MARKDOWN PREVIEWER
+        // ==========================================
+        function renderMarkdown() {
+            const input = document.getElementById('markdownInput').value;
+            let html = input
+                .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                .replace(/^- (.*$)/gm, '• $1<br>')
+                .replace(/\n/g, '<br>');
+            
+            document.getElementById('markdownPreview').innerHTML = html;
+        }
+        // Initial render
+        setTimeout(renderMarkdown, 100);
+
+        // ==========================================
+        // PIXEL ART CANVAS
+        // ==========================================
+        let currentPixelColor = '#00f0ff';
+        let isDrawing = false;
+
+        function initPixelCanvas() {
+            const canvas = document.getElementById('pixelCanvas');
+            canvas.innerHTML = '';
+            
+            for (let i = 0; i < 256; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'pixel-cell';
+                
+                cell.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    isDrawing = true;
+                    cell.style.background = currentPixelColor;
+                });
+                
+                cell.addEventListener('pointerenter', (e) => {
+                    if (isDrawing) {
+                        cell.style.background = currentPixelColor;
+                    }
+                });
+                
+                canvas.appendChild(cell);
+            }
+            
+            document.addEventListener('pointerup', () => {
+                isDrawing = false;
+            });
+        }
+
+        function setPixelColor(color, el) {
+            currentPixelColor = color;
+            document.getElementById('pixelColor').value = color;
+            document.querySelectorAll('.pixel-preset').forEach(p => p.classList.remove('active'));
+            if (el) el.classList.add('active');
+        }
+
+        document.getElementById('pixelColor').addEventListener('input', function() {
+            currentPixelColor = this.value;
+            document.querySelectorAll('.pixel-preset').forEach(p => p.classList.remove('active'));
+        });
+
+        function clearPixelCanvas() {
+            document.querySelectorAll('.pixel-cell').forEach(cell => {
+                cell.style.background = 'rgba(255, 255, 255, 0.03)';
+            });
+        }
+
+        function randomPixelArt() {
+            const colors = ['#00f0ff', '#ff00e5', '#39ff14', '#ffe600', '#ff6600', '#bd93f9', 'rgba(255,255,255,0.03)'];
+            document.querySelectorAll('.pixel-cell').forEach(cell => {
+                cell.style.background = colors[Math.floor(Math.random() * colors.length)];
+            });
+        }
+
+        initPixelCanvas();
+
+        // ==========================================
+        // FUN ZONE - IMPOSSIBLE BUTTON
+        // ==========================================
+        let impossibleAttempts = 0;
+        const impossibleMessages = [
+            "Nice try! 😏",
+            "Too slow! 🐌",
+            "Almost! ...not really 😂",
+            "Are you even trying? 🤣",
+            "I could do this all day! 💪",
+            "Maybe try using your toes? 🦶",
+            "Plot twist: I'm sentient 🤖",
+            "Error 404: Click not found 😎"
+        ];
+
+        function moveImpossibleBtn(e) {
+            if (e) e.preventDefault();
+            const btn = document.getElementById('impossibleBtn');
+            const container = document.getElementById('impossibleContainer');
+            const containerRect = container.getBoundingClientRect();
+            
+            const maxX = containerRect.width - btn.offsetWidth;
+            const maxY = containerRect.height - btn.offsetHeight;
+            
+            const newX = Math.random() * maxX;
+            const newY = Math.random() * maxY;
+            
+            btn.style.left = newX + 'px';
+            btn.style.top = newY + 'px';
+            
+            impossibleAttempts++;
+            document.getElementById('impossibleMsg').textContent = 
+                impossibleMessages[impossibleAttempts % impossibleMessages.length];
+        }
+
+        function impossibleClicked() {
+            showToast("IMPOSSIBLE! You actually clicked it?! 🤯");
+            document.getElementById('impossibleMsg').textContent = "Wait... HOW?! 🤯🤯🤯";
+        }
+
+        // ==========================================
+        // FUN ZONE - VIBE CHECK
+        // ==========================================
+        const vibes = [
+            { emoji: '🔥', text: 'Absolute fire! Your code compiles on the first try!' },
+            { emoji: '😎', text: 'Cool as a cucumber. Even your bugs look stylish.' },
+            { emoji: '🧠', text: 'Big brain energy! You dream in binary.' },
+            { emoji: '💀', text: 'Dead inside but the code is alive. Classic dev.' },
+            { emoji: '🚀', text: 'To the moon! Your productivity is off the charts!' },
+            { emoji: '😴', text: 'Sleepy vibes. Time for coffee... or 3 cups.' },
+            { emoji: '🤡', text: 'Clown vibes. You just pushed to main, didn\'t you?' },
+            { emoji: '✨', text: 'Sparkling! Everything you touch turns to clean code.' },
+            { emoji: '🦾', text: 'Robot mode activated. You ARE the machine.' },
+            { emoji: '🌈', text: 'Rainbow vibes! Your terminal has custom themes.' },
+            { emoji: '👾', text: 'Gamer mode! Alt-tabbing between code and games.' },
+            { emoji: '🧊', text: 'Ice cold. You fix bugs without breaking a sweat.' }
+        ];
+
+        function checkVibe() {
+            const vibe = vibes[Math.floor(Math.random() * vibes.length)];
+            const resultEl = document.getElementById('vibeResult');
+            const textEl = document.getElementById('vibeText');
+            
+            resultEl.style.transform = 'scale(0)';
+            setTimeout(() => {
+                resultEl.textContent = vibe.emoji;
+                resultEl.style.transform = 'scale(1)';
+                resultEl.style.transition = 'transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                textEl.textContent = vibe.text;
+            }, 200);
+        }
+
+        // ==========================================
+        // FUN ZONE - EXCUSE GENERATOR
+        // ==========================================
+        const excuses = [
+            "It works on my machine! I swear! 🖥️",
+            "The code was fine until the user started using it... 👤",
+            "I was debugging in my dreams and forgot to push the fix 😴",
+            "My cat walked across the keyboard and deleted everything 🐱",
+            "The requirements changed 47 times since yesterday 📋",
+            "Stack Overflow was down for maintenance 📚",
+            "I accidentally deployed to production... on a Friday 💀",
+            "The bug is actually a feature that nobody asked for ✨",
+            "My rubber duck gave me bad advice 🦆",
+            "The code is self-aware and refuses to work 🤖",
+            "I was optimizing the code... for confusion 🧩",
+            "Git merge conflict ate my homework 📝",
+            "The server is powered by hamsters and they went on strike 🐹",
+            "I couldn't push because Mercury is in retrograde 🌑",
+            "The API returned a 418: I'm a teapot ☕",
+            "My code is too advanced for the computer to understand 🧠"
+        ];
+
+        function generateExcuse() {
+            const excuse = excuses[Math.floor(Math.random() * excuses.length)];
+            const display = document.getElementById('excuseDisplay');
+            display.style.opacity = 0;
+            setTimeout(() => {
+                display.textContent = excuse;
+                display.style.opacity = 1;
+                display.style.transition = 'opacity 0.3s ease';
+            }, 200);
+        }
+
+        // ==========================================
+        // FUN ZONE - CODE FORTUNE TELLER
+        // ==========================================
+        const fortunes = [
+            "🌟 A senior developer will approve your PR without comments today.",
+            "⚠️ Beware of the semicolon. It plots against you.",
+            "🎉 Your next project will go viral on ProductHunt.",
+            "💀 You will accidentally delete node_modules... again.",
+            "🚀 A breakthrough idea will come to you at 3 AM.",
+            "🐛 A bug from 2022 will resurface. Steel yourself.",
+            "✨ Someone will star your GitHub repo today!",
+            "☕ Your coffee machine will break, but your code won't.",
+            "🎯 You will solve a problem that has haunted you for weeks.",
+            "🤯 You will discover a one-line solution to a 200-line problem.",
+            "🌈 The CSS gods smile upon you. Everything will be centered.",
+            "💎 A new programming language will catch your eye.",
+            "🔮 Your next commit message will be accidentally poetic.",
+            "⭐ npm install will work on the first try. Cherish this moment.",
+            "🎪 You will teach someone to code and feel like a wizard."
+        ];
+
+        function tellFortune() {
+            const fortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+            const display = document.getElementById('fortuneText');
+            const orb = document.querySelector('.fortune-orb');
+            
+            orb.style.animation = 'none';
+            orb.style.transform = 'scale(1.2)';
+            orb.style.transition = 'transform 0.3s ease';
+            
+            setTimeout(() => {
+                display.textContent = fortune;
+                orb.style.transform = 'scale(1)';
+                setTimeout(() => {
+                    orb.style.animation = 'float 3s ease-in-out infinite';
+                }, 300);
+            }, 500);
+        }
+
+        // ==========================================
+        // TYPED EFFECT FOR HERO
+        // ==========================================
+        // Simple typing cursor blink effect for the code snippet
+        const codeLines = document.querySelectorAll('.code-line');
+        let currentLineIndex = 0;
+
+        function typeCodeLine() {
+            if (currentLineIndex < codeLines.length) {
+                codeLines[currentLineIndex].style.opacity = 1;
+                currentLineIndex++;
+                setTimeout(typeCodeLine, 150);
+            }
+        }
+
+        // Initially hide code lines
+        codeLines.forEach(line => line.style.opacity = 0);
+
+        // Start typing after load
+        setTimeout(() => {
+            codeLines.forEach(line => {
+                line.style.transition = 'opacity 0.3s ease';
+            });
+            typeCodeLine();
+        }, 3000);
+
+        // ==========================================
+        // COUNTER ANIMATION
+        // ==========================================
+        function animateCounter(element, target, duration) {
+            const start = 0;
+            const startTime = Date.now();
+            
+            function update() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = Math.floor(start + (target - start) * eased);
+                
+                element.textContent = current.toLocaleString() + '+';
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            update();
+        }
+
+        // ==========================================
+        // EASTER EGG - Konami Code
+        // ==========================================
+        let konamiSequence = [];
+        const konamiCode = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
+
+        document.addEventListener('keydown', (e) => {
+            konamiSequence.push(e.keyCode);
+            if (konamiSequence.length > konamiCode.length) {
+                konamiSequence.shift();
+            }
+            if (JSON.stringify(konamiSequence) === JSON.stringify(konamiCode)) {
+                showToast('🎮 KONAMI CODE ACTIVATED! You found the easter egg! 🥚');
+                document.body.style.animation = 'rainbow-bg 2s ease';
+            }
+        });
+
+        // ==========================================
+        // INITIAL SETUP
+        // ==========================================
+        generatePassword();
+
+        // Prevent zoom on double tap for iOS
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
