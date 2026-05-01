@@ -1,132 +1,107 @@
-const { initFaunaClient, handleCORS, validateAdminKey } = require('./utils/fauna');
-const faunadb = require('faunadb');
-const q = faunadb.query;
+const { ObjectId } = require('mongodb');
+const {
+  connectToDatabase,
+  handleCORS,
+  validateAdminKey,
+  formatDoc,
+  formatDocs,
+  successResponse,
+  errorResponse,
+  unauthorizedResponse
+} = require('./utils/mongodb');
 
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return handleCORS();
 
-  const client = initFaunaClient();
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json'
-  };
-
   try {
-    // GET - Fetch approved testimonials
+    const { db } = await connectToDatabase();
+    const collection = db.collection('testimonials');
+
+    // ─── GET: Fetch testimonials ─────────────────────────────────
     if (event.httpMethod === 'GET') {
-      const authHeader = event.headers.authorization;
-      const isAdmin = validateAdminKey(authHeader);
+      const isAdmin = validateAdminKey(event.headers.authorization);
 
-      let result;
-      if (isAdmin) {
-        result = await client.query(
-          q.Map(
-            q.Paginate(q.Documents(q.Collection('testimonials'))),
-            q.Lambda('ref', q.Get(q.Var('ref')))
-          )
-        );
-      } else {
-        result = await client.query(
-          q.Map(
-            q.Paginate(q.Match(q.Index('testimonials_by_status'), 'approved')),
-            q.Lambda('ref', q.Get(q.Var('ref')))
-          )
-        );
-      }
+      // Admin sees all, public sees only approved
+      const filter = isAdmin ? {} : { status: 'approved' };
 
-      const testimonials = result.data.map(doc => ({
-        id: doc.ref.id,
-        ...doc.data
-      }));
+      const testimonials = await collection
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .toArray();
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ success: true, testimonials })
-      };
+      return successResponse({ testimonials: formatDocs(testimonials) });
     }
 
-    // POST - Submit testimonial
+    // ─── POST: Submit a testimonial (public) ────────────────────
     if (event.httpMethod === 'POST') {
-      const data = JSON.parse(event.body);
+      const body = JSON.parse(event.body || '{}');
 
-      if (!data.name || !data.text) {
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({ success: false, error: 'Name and testimonial text required' })
-        };
+      if (!body.name?.trim()) return errorResponse('Name is required', 400);
+      if (!body.text?.trim()) return errorResponse('Testimonial text is required', 400);
+      if (body.text.trim().length < 15) {
+        return errorResponse('Testimonial is too short (min 15 characters)', 400);
       }
 
       const testimonial = {
-        name: data.name.slice(0, 100),
-        role: (data.role || 'Developer').slice(0, 100),
-        text: data.text.slice(0, 500),
-        avatar: data.avatar || '👤',
-        rating: Math.min(5, Math.max(1, parseInt(data.rating) || 5)),
-        status: 'pending', // pending, approved, rejected
-        createdAt: new Date().toISOString()
+        name:      body.name.trim().slice(0, 100),
+        role:      (body.role || 'Developer').trim().slice(0, 100),
+        text:      body.text.trim().slice(0, 600),
+        avatar:    (body.avatar || '👤').slice(0, 10),
+        rating:    Math.min(5, Math.max(1, parseInt(body.rating) || 5)),
+        status:    'pending',
+        createdAt: new Date()
       };
 
-      const result = await client.query(
-        q.Create(q.Collection('testimonials'), { data: testimonial })
-      );
+      const result = await collection.insertOne(testimonial);
 
-      return {
-        statusCode: 201,
-        headers,
-        body: JSON.stringify({
-          success: true,
-          message: 'Testimonial submitted! Awaiting approval 🙌',
-          id: result.ref.id
-        })
-      };
+      return successResponse({
+        message: '🙌 Testimonial submitted! Awaiting approval from Pavit.',
+        id: result.insertedId.toString()
+      }, 201);
     }
 
-    // PATCH - Approve/reject testimonial (admin)
+    // ─── PATCH: Approve or reject testimonial (admin only) ───────
     if (event.httpMethod === 'PATCH') {
-      const authHeader = event.headers.authorization;
-      if (!validateAdminKey(authHeader)) {
-        return { statusCode: 401, headers, body: JSON.stringify({ success: false }) };
+      if (!validateAdminKey(event.headers.authorization)) {
+        return unauthorizedResponse();
       }
 
-      const { id, status } = JSON.parse(event.body);
-      await client.query(
-        q.Update(q.Ref(q.Collection('testimonials'), id), {
-          data: { status, reviewedAt: new Date().toISOString() }
-        })
+      const body = JSON.parse(event.body || '{}');
+      if (!body.id) return errorResponse('Testimonial ID is required', 400);
+
+      const validStatuses = ['approved', 'rejected', 'pending'];
+      const status = validStatuses.includes(body.status) ? body.status : 'approved';
+
+      await collection.updateOne(
+        { _id: new ObjectId(body.id) },
+        {
+          $set: {
+            status,
+            reviewedAt: new Date()
+          }
+        }
       );
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ success: true, message: `Testimonial ${status}` })
-      };
+      return successResponse({ message: `Testimonial ${status} successfully` });
     }
 
-    // DELETE - Remove testimonial (admin)
+    // ─── DELETE: Remove testimonial (admin only) ─────────────────
     if (event.httpMethod === 'DELETE') {
-      const authHeader = event.headers.authorization;
-      if (!validateAdminKey(authHeader)) {
-        return { statusCode: 401, headers, body: JSON.stringify({ success: false }) };
+      if (!validateAdminKey(event.headers.authorization)) {
+        return unauthorizedResponse();
       }
 
-      const { id } = JSON.parse(event.body);
-      await client.query(q.Delete(q.Ref(q.Collection('testimonials'), id)));
+      const body = JSON.parse(event.body || '{}');
+      if (!body.id) return errorResponse('Testimonial ID is required', 400);
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ success: true })
-      };
+      await collection.deleteOne({ _id: new ObjectId(body.id) });
+      return successResponse({ message: 'Testimonial deleted' });
     }
 
-  } catch (error) {
-    console.error('Testimonials function error:', error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ success: false, error: error.message })
-    };
+    return errorResponse('Method not allowed', 405);
+
+  } catch (err) {
+    console.error('Testimonials function error:', err);
+    return errorResponse(err.message);
   }
 };
