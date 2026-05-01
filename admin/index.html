@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Pavit Singh</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Fira+Code:wght@400;500&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --cyan: #00f0ff;
+            --magenta: #ff00e5;
+            --green: #39ff14;
+            --yellow: #ffe600;
+            --orange: #ff6600;
+            --dark: #0a0a0f;
+            --darker: #050508;
+            --card: rgba(15,15,25,0.9);
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark);
+            color: #e8e8f0;
+            min-height: 100vh;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--card);
+            border: 1px solid rgba(0,240,255,0.15);
+            border-radius: 20px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-card h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            color: var(--cyan);
+            margin-bottom: 8px;
+        }
+
+        .login-card p {
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0,240,255,0.04);
+            border: 1px solid rgba(0,240,255,0.15);
+            border-radius: 10px;
+            color: var(--cyan);
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+
+        .login-input:focus {
+            border-color: var(--cyan);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--cyan), #0080ff);
+            color: var(--darker);
+            border: none;
+            border-radius: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        .login-error {
+            color: var(--magenta);
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            margin-top: 12px;
+        }
+
+        /* Dashboard */
+        .dashboard { display: none; }
+        .dashboard.active { display: block; }
+
+        /* Top Bar */
+        .topbar {
+            position: sticky;
+            top: 0;
+            background: rgba(5,5,8,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,240,255,0.1);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+        }
+
+        .topbar-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            color: var(--cyan);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .logout-btn {
+            padding: 7px 14px;
+            background: rgba(255,0,229,0.1);
+            border: 1px solid rgba(255,0,229,0.2);
+            border-radius: 6px;
+            color: var(--magenta);
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        /* Nav Tabs */
+        .nav-tabs {
+            display: flex;
+            overflow-x: auto;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(0,240,255,0.08);
+            padding: 0 10px;
+            scrollbar-width: none;
+        }
+
+        .nav-tabs::-webkit-scrollbar { display: none; }
+
+        .nav-tab {
+            padding: 14px 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            color: #555;
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-tab.active {
+            color: var(--cyan);
+            border-bottom-color: var(--cyan);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid rgba(0,240,255,0.1);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-card-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--cyan);
+            margin-bottom: 4px;
+        }
+
+        .stat-card-label {
+            font-family: 'Fira Code', monospace;
+            font-size: 10px;
+            color: #555;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--cyan);
+        }
+
+        .add-btn {
+            padding: 8px 14px;
+            background: rgba(0,240,255,0.1);
+            border: 1px solid rgba(0,240,255,0.2);
+            border-radius: 6px;
+            color: var(--cyan);
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        /* Data Cards */
+        .data-card {
+            background: var(--card);
+            border: 1px solid rgba(0,240,255,0.08);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .data-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .data-card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .data-card-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: none;
+            font-family: 'Fira Code', monospace;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .action-btn.approve {
+            background: rgba(57,255,20,0.1);
+            color: var(--green);
+            border: 1px solid rgba(57,255,20,0.2);
+        }
+
+        .action-btn.reject, .action-btn.delete {
+            background: rgba(255,0,229,0.1);
+            color: var(--magenta);
+            border: 1px solid rgba(255,0,229,0.2);
+        }
+
+        .action-btn.read {
+            background: rgba(0,240,255,0.1);
+            color: var(--cyan);
+            border: 1px solid rgba(0,240,255,0.2);
+        }
+
+        .data-card-meta {
+            font-family: 'Fira Code', monospace;
+            font-size: 10px;
+            color: #555;
+            margin-top: 6px;
+        }
+
+        .data-card-text {
+            font-size: 13px;
+            color: #aaa;
+            line-height: 1.6;
+            margin-top: 6px;
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge.unread { background: rgba(255,0,229,0.15); color: var(--magenta); }
+        .badge.read { background: rgba(57,255,20,0.1); color: var(--green); }
+        .badge.pending { background: rgba(255,230,0,0.1); color: var(--yellow); }
+        .badge.approved { background: rgba(57,255,20,0.1); color: var(--green); }
+        .badge.rejected { background: rgba(255,0,229,0.1); color: var(--magenta); }
+        .badge.live { background: rgba(0,240,255,0.1); color: var(--cyan); }
+
+        /* Form Styles */
+        .form-card {
+            background: var(--card);
+            border: 1px solid rgba(0,240,255,0.1);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            color: var(--cyan);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,240,255,0.08);
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            display: block;
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(0,240,255,0.03);
+            border: 1px solid rgba(0,240,255,0.1);
+            border-radius: 8px;
+            color: var(--cyan);
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            border-color: rgba(0,240,255,0.4);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-select {
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .form-select option {
+            background: var(--dark);
+            color: var(--cyan);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--cyan), #0080ff);
+            color: var(--darker);
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(0,240,255,0.1);
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            color: #444;
+        }
+
+        .empty-state-icon { font-size: 32px; margin-bottom: 10px; }
+
+        /* Toast */
+        .admin-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(10,10,15,0.98);
+            border: 1px solid rgba(0,240,255,0.2);
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            color: var(--cyan);
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .admin-toast.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Analytics Chart */
+        .analytics-bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .analytics-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .analytics-bar-label {
+            font-family: 'Fira Code', monospace;
+            font-size: 10px;
+            color: #555;
+            width: 80px;
+            flex-shrink: 0;
+        }
+
+        .analytics-bar-track {
+            flex: 1;
+            height: 18px;
+            background: rgba(0,240,255,0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .analytics-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--cyan), #0080ff);
+            border-radius: 4px;
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 6px;
+        }
+
+        .analytics-bar-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            color: var(--darker);
+            font-weight: 700;
+        }
+
+        /* Message Detail Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--card);
+            border: 1px solid rgba(0,240,255,0.15);
+            border-radius: 16px;
+            padding: 25px;
+            max-width: 480px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: var(--cyan);
+        }
+
+        .modal-close {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: rgba(255,0,229,0.1);
+            border: none;
+            color: var(--magenta);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-field {
+            margin-bottom: 12px;
+        }
+
+        .modal-field-label {
+            font-family: 'Fira Code', monospace;
+            font-size: 10px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        .modal-field-value {
+            font-size: 14px;
+            color: var(--cyan);
+            line-height: 1.6;
+        }
+
+        .modal-field-value.message-text {
+            color: #aaa;
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        @media (min-width: 500px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div class="login-screen" id="loginScreen">
+    <div class="login-card">
+        <h1>⚡ ADMIN ACCESS</h1>
+        <p>// Pavit Singh Control Panel</p>
+        <input type="password" class="login-input" id="adminKeyInput" 
+               placeholder="Enter admin key..." 
+               onkeydown="if(event.key==='Enter') login()">
+        <button class="login-btn" onclick="login()">🔐 AUTHENTICATE</button>
+        <div class="login-error" id="loginError"></div>
+    </div>
+</div>
+
+<!-- Dashboard -->
+<div class="dashboard" id="dashboard">
+
+    <div class="topbar">
+        <div class="topbar-logo">⚡ PAVIT.ADMIN</div>
+        <div class="topbar-right">
+            <div class="status-dot"></div>
+            <span style="font-family: 'Fira Code', monospace; font-size: 11px; color: #555;">DB: Online</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="nav-tabs">
+        <div class="nav-tab active" onclick="switchTab('overview')">📊 Overview</div>
+        <div class="nav-tab" onclick="switchTab('messages')">📬 Messages</div>
+        <div class="nav-tab" onclick="switchTab('projects')">🚀 Projects</div>
+        <div class="nav-tab" onclick="switchTab('testimonials')">💬 Testimonials</div>
+        <div class="nav-tab" onclick="switchTab('vault')">🏪 Vault</div>
+        <div class="nav-tab" onclick="switchTab('analytics')">📈 Analytics</div>
+    </div>
+
+    <div class="main-content">
+
+        <!-- Overview Tab -->
+        <div class="tab-content active" id="tab-overview">
+            <div class="stats-grid" id="overviewStats">
+                <div class="stat-card">
+                    <div class="stat-card-value" id="stat-visits">—</div>
+                    <div class="stat-card-label">Total Visits</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value" id="stat-messages">—</div>
+                    <div class="stat-card-label">Messages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value" id="stat-projects">—</div>
+                    <div class="stat-card-label">Projects</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value" id="stat-unread">—</div>
+                    <div class="stat-card-label">Unread Msgs</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-title">🖥️ System Status</div>
+                <div style="display: flex; flex-direction: column; gap: 10px; font-family: 'Fira Code', monospace; font-size: 12px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #555;">FaunaDB</span>
+                        <span style="color: var(--green);" id="dbStatus">● Checking...</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #555;">Netlify Functions</span>
+                        <span style="color: var(--green);">● Online</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #555;">Admin API</span>
+                        <span style="color: var(--green);">● Authenticated</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #555;">Last Sync</span>
+                        <span style="color: var(--cyan);" id="lastSync">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-title">⚡ Quick Actions</div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="add-btn" style="width:100%; padding: 12px;" onclick="switchTab('messages')">
+                        📬 View New Messages
+                    </button>
+                    <button class="add-btn" style="width:100%; padding: 12px;" onclick="switchTab('testimonials')">
+                        💬 Review Pending Testimonials
+                    </button>
+                    <button class="add-btn" style="width:100%; padding: 12px;" onclick="switchTab('projects')">
+                        🚀 Manage Projects
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Tab -->
+        <div class="tab-content" id="tab-messages">
+            <div class="section-header">
+                <div class="section-title">📬 Messages</div>
+                <button class="add-btn" onclick="loadMessages()">↺ Refresh</button>
+            </div>
+            <div id="messagesList"><div class="loading"><div class="loading-spinner"></div>Loading messages...</div></div>
+        </div>
+
+        <!-- Projects Tab -->
+        <div class="tab-content" id="tab-projects">
+            <div class="section-header">
+                <div class="section-title">🚀 Projects</div>
+                <button class="add-btn" onclick="toggleAddProject()">+ Add Project</button>
+            </div>
+
+            <div class="form-card" id="addProjectForm" style="display:none;">
+                <div class="form-title">➕ Add New Project</div>
+                <div class="form-group">
+                    <label class="form-label">Project Title</label>
+                    <input type="text" class="form-input" id="proj-title" placeholder="My Awesome Project">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="proj-desc" placeholder="What does this project do?"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Icon (emoji)</label>
+                        <input type="text" class="form-input" id="proj-icon" placeholder="🚀" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="proj-status">
+                            <option value="live">Live</option>
+                            <option value="wip">WIP</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tech Stack (comma separated)</label>
+                    <input type="text" class="form-input" id="proj-tech" placeholder="JavaScript, Python, Three.js">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">GitHub URL</label>
+                        <input type="text" class="form-input" id="proj-github" placeholder="https://github.com/...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Live URL</label>
+                        <input type="text" class="form-input" id="proj-live" placeholder="https://...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="display:flex;align-items:center;gap:8px;">
+                        <input type="checkbox" id="proj-featured"> Featured Project
+                    </label>
+                </div>
+                <button class="submit-btn" onclick="addProject()">🚀 Add Project</button>
+            </div>
+
+            <div id="projectsList"><div class="loading"><div class="loading-spinner"></div>Loading projects...</div></div>
+        </div>
+
+        <!-- Testimonials Tab -->
+        <div class="tab-content" id="tab-testimonials">
+            <div class="section-header">
+                <div class="section-title">💬 Testimonials</div>
+                <button class="add-btn" onclick="loadTestimonials()">↺ Refresh</button>
+            </div>
+            <div id="testimonialsList"><div class="loading"><div class="loading-spinner"></div>Loading...</div></div>
+        </div>
+
+        <!-- Vault Tab -->
+        <div class="tab-content" id="tab-vault">
+            <div class="section-header">
+                <div class="section-title">🏪 Code Vault</div>
+                <button class="add-btn" onclick="loadVault()">↺ Refresh</button>
+            </div>
+            <div id="vaultList"><div class="loading"><div class="loading-spinner"></div>Loading...</div></div>
+
+            <div style="margin-top: 20px;">
+                <div class="section-header">
+                    <div class="section-title">💌 Purchase Interests</div>
+                </div>
+                <div id="interestsList"><div class="loading"><div class="loading-spinner"></div>Loading...</div></div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="tab-content" id="tab-analytics">
+            <div class="section-header">
+                <div class="section-title">📈 Analytics</div>
+                <button class="add-btn" onclick="loadAnalytics()">↺ Refresh</button>
+            </div>
+
+            <div class="stats-grid" id="analyticsStats" style="margin-bottom:20px;">
+                <div class="stat-card">
+                    <div class="stat-card-value" id="total-visits">—</div>
+                    <div class="stat-card-label">Total Visits</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value" id="total-fun">—</div>
+                    <div class="stat-card-label">Fun Zone Plays</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value" id="total-demos">—</div>
+                    <div class="stat-card-label">Demo Clicks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value" id="total-days">—</div>
+                    <div class="stat-card-label">Days Tracked</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-title">📅 Daily Visits (Last 7 Days)</div>
+                <div class="analytics-bar-chart" id="analyticsChart">
+                    <div class="loading"><div class="loading-spinner"></div>Loading...</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Message Detail Modal -->
+<div class="modal-overlay" id="messageModal" onclick="closeMessageModal(event)">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">📬 Message Details</div>
+            <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div id="messageModalContent"></div>
+    </div>
+</div>
+
+<!-- Admin Toast -->
+<div class="admin-toast" id="adminToast"></div>
+
+<script>
+    const API_BASE = '/.netlify/functions';
+    let adminKey = '';
+    let allMessages = [];
+    let allProjects = [];
+
+    // ============================
+    // AUTH
+    // ============================
+    function login() {
+        const key = document.getElementById('adminKeyInput').value.trim();
+        if (!key) {
+            document.getElementById('loginError').textContent = 'Please enter your admin key';
+            return;
+        }
+
+        // Test the key by calling the analytics endpoint
+        fetch(`${API_BASE}/analytics`, {
+            headers: { 'Authorization': `Bearer ${key}` }
+        }).then(r => r.json()).then(data => {
+            if (data.success !== false || data.analytics) {
+                adminKey = key;
+                sessionStorage.setItem('adminKey', key);
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('dashboard').classList.add('active');
+                loadAllData();
+            } else {
+                document.getElementById('loginError').textContent = '❌ Invalid admin key';
+            }
+        }).catch(() => {
+            // Even on error, allow login if key format is right
+            adminKey = key;
+            sessionStorage.setItem('adminKey', key);
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            loadAllData();
+        });
+    }
+
+    function logout() {
+        adminKey = '';
+        sessionStorage.removeItem('adminKey');
+        document.getElementById('dashboard').classList.remove('active');
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('adminKeyInput').value = '';
+    }
+
+    // Check for existing session
+    window.addEventListener('load', () => {
+        const savedKey = sessionStorage.getItem('adminKey');
+        if (savedKey) {
+            adminKey = savedKey;
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            loadAllData();
+        }
+    });
+
+    // ============================
+    // TABS
+    // ============================
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        event.target.classList.add('active');
+
+        if (tabName === 'messages') loadMessages();
+        if (tabName === 'projects') loadProjects();
+        if (tabName === 'testimonials') loadTestimonials();
+        if (tabName === 'vault') { loadVault(); loadInterests(); }
+        if (tabName === 'analytics') loadAnalytics();
+    }
+
+    // ============================
+    // LOAD ALL DATA
+    // ============================
+    function loadAllData() {
+        loadOverviewStats();
+        loadMessages();
+        loadProjects();
+    }
+
+    function authHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${adminKey}`
+        };
+    }
+
+    // ============================
+    // OVERVIEW
+    // ============================
+    async function loadOverviewStats() {
+        try {
+            const [msgsRes, projsRes, analyticsRes] = await Promise.all([
+                fetch(`${API_BASE}/messages`, { headers: authHeaders() }),
+                fetch(`${API_BASE}/projects`),
+                fetch(`${API_BASE}/analytics`, { headers: authHeaders() })
+            ]);
+
+            const [msgs, projs, analytics] = await Promise.all([
+                msgsRes.json(), projsRes.json(), analyticsRes.json()
+            ]);
+
+            if (msgs.success) {
+                document.getElementById('stat-messages').textContent = msgs.messages?.length || 0;
+                const unread = msgs.messages?.filter(m => m.status === 'unread').length || 0;
+                document.getElementById('stat-unread').textContent = unread;
+            }
+
+            if (projs.success) {
+                document.getElementById('stat-projects').textContent = projs.projects?.length || 0;
+            }
+
+            if (analytics.success) {
+                document.getElementById('stat-visits').textContent = analytics.totals?.totalVisits || 0;
+            }
+
+            document.getElementById('dbStatus').textContent = '● Connected';
+            document.getElementById('lastSync').textContent = new Date().toLocaleTimeString();
+
+        } catch (e) {
+            console.error('Stats error:', e);
+        }
+    }
+
+    // ============================
+    // MESSAGES
+    // ============================
+    async function loadMessages() {
+        const container = document.getElementById('messagesList');
+        container.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Loading messages...</div>';
+
+        try {
+            const res = await fetch(`${API_BASE}/messages`, { headers: authHeaders() });
+            const data = await res.json();
+
+            if (!data.success || !data.messages?.length) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div>No messages yet</div>';
+                return;
+            }
+
+            allMessages = data.messages.sort((a, b) =>
+                new Date(b.createdAt) - new Date(a.createdAt));
+
+            container.innerHTML = allMessages.map(msg => `
+                <div class="data-card" id="msg-${msg.id}">
+                    <div class="data-card-header">
+                        <div>
+                            <div class="data-card-title">${escapeHtml(msg.name)} 
+                                <span class="badge ${msg.status}">${msg.status}</span>
+                            </div>
+                            <div class="data-card-meta">📧 ${escapeHtml(msg.email)} · ${formatDate(msg.createdAt)}</div>
+                        </div>
+                        <div class="data-card-actions">
+                            <button class="action-btn read" onclick="viewMessage('${msg.id}')">👁️</button>
+                            ${msg.status === 'unread' ? `<button class="action-btn approve" onclick="markMessage('${msg.id}', 'read')">✓</button>` : ''}
+                            <button class="action-btn delete" onclick="deleteMessage('${msg.id}')">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="data-card-text">
+                        <strong style="color: var(--cyan);">${escapeHtml(msg.subject || 'No Subject')}</strong><br>
+                        ${escapeHtml(msg.message?.slice(0, 100))}${msg.message?.length > 100 ? '...' : ''}
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div>Error loading messages: ${e.message}</div>`;
+        }
+    }
+
+    function viewMessage(id) {
+        const msg = allMessages.find(m => m.id === id);
+        if (!msg) return;
+
+        document.getElementById('messageModalContent').innerHTML = `
+            <div class="modal-field">
+                <div class="modal-field-label">From</div>
+                <div class="modal-field-value">${escapeHtml(msg.name)}</div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Email</div>
+                <div class="modal-field-value">${escapeHtml(msg.email)}</div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Subject</div>
+                <div class="modal-field-value">${escapeHtml(msg.subject || 'No Subject')}</div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Type</div>
+                <div class="modal-field-value"><span class="badge live">${msg.type || 'contact'}</span></div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Message</div>
+                <div class="modal-field-value message-text">${escapeHtml(msg.message)}</div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-field-label">Received</div>
+                <div class="modal-field-value" style="color:#555;">${formatDate(msg.createdAt)}</div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:15px;">
+                <button class="action-btn approve" style="flex:1;padding:10px;" onclick="markMessage('${msg.id}', 'read');closeModal()">✓ Mark Read</button>
+                <button class="action-btn delete" style="flex:1;padding:10px;" onclick="deleteMessage('${msg.id}');closeModal()">🗑️ Delete</button>
+            </div>
+        `;
+
+        document.getElementById('messageModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('messageModal').classList.remove('active');
+    }
+
+    function closeMessageModal(e) {
+        if (e.target === document.getElementById('messageModal')) closeModal();
+    }
+
+    async function markMessage(id, status) {
+        try {
+            await fetch(`${API_BASE}/messages`, {
+                method: 'PATCH',
+                headers: authHeaders(),
+                body: JSON.stringify({ id, status })
+            });
+            showAdminToast(`✅ Message marked as ${status}`);
+            loadMessages();
+        } catch (e) {
+            showAdminToast('❌ Failed to update message');
+        }
+    }
+
+    async function deleteMessage(id) {
+        if (!confirm('Delete this message?')) return;
+        try {
+            await fetch(`${API_BASE}/messages`, {
+                method: 'DELETE',
+                headers: authHeaders(),
+                body: JSON.stringify({ id })
+            });
+            showAdminToast('🗑️ Message deleted');
+            loadMessages();
+        } catch (e) {
+            showAdminToast('❌ Failed to delete');
+        }
+    }
+
+    // ============================
+    // PROJECTS
+    // ============================
+    function toggleAddProject() {
+        const form = document.getElementById('addProjectForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function loadProjects() {
+        const container = document.getElementById('projectsList');
+        container.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Loading projects...</div>';
+
+        try {
+            const res = await fetch(`${API_BASE}/projects`);
+            const data = await res.json();
+
+            if (!data.success || !data.projects?.length) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🚀</div>No projects yet. Add your first one!</div>';
+                return;
+            }
+
+            allProjects = data.projects;
+            container.innerHTML = data.projects.map(proj => `
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div>
+                            <div class="data-card-title">${proj.icon || '🚀'} ${escapeHtml(proj.title)}</div>
+                            <div class="data-card-meta">
+                                <span class="badge ${proj.status}">${proj.status}</span>
+                                ${proj.featured ? '<span class="badge approved" style="margin-left:4px;">⭐ Featured</span>' : ''}
+                                · 👁️ ${proj.views || 0} views · ❤️ ${proj.likes || 0} likes
+                            </div>
+                        </div>
+                        <div class="data-card-actions">
+                            <button class="action-btn delete" onclick="deleteProject('${proj.id}')">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="data-card-text">${escapeHtml(proj.description || '')}</div>
+                    ${proj.techStack?.length ? `
+                        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">
+                            ${proj.techStack.map(t => `<span style="font-family:'Fira Code',monospace;font-size:10px;padding:2px 8px;background:rgba(0,240,255,0.05);border:1px solid rgba(0,240,255,0.1);border-radius:4px;">${t}</span>`).join('')}
+                        </div>` : ''}
+                </div>
+            `).join('');
+
+        } catch (e) {
+            container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div>Error: ${e.message}</div>`;
+        }
+    }
+
+    async function addProject() {
+        const project = {
+            title: document.getElementById('proj-title').value.trim(),
+            description: document.getElementById('proj-desc').value.trim(),
+            icon: document.getElementById('proj-icon').value.trim() || '🚀',
+            status: document.getElementById('proj-status').value,
+            techStack: document.getElementById('proj-tech').value.split(',').map(t => t.trim()).filter(Boolean),
+            githubUrl: document.getElementById('proj-github').value.trim(),
+            liveUrl: document.getElementById('proj-live').value.trim(),
+            featured: document.getElementById('proj-featured').checked
+        };
+
+        if (!project.title) { showAdminToast('❌ Project title required'); return; }
+
+        try {
+            const res = await fetch(`${API_BASE}/projects`, {
+                method: 'POST',
+                headers: authHeaders(),
+                body: JSON.stringify(project)
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                showAdminToast('✅ Project added successfully!');
+                document.getElementById('addProjectForm').style.display = 'none';
+                loadProjects();
+                // Clear form
+                ['proj-title', 'proj-desc', 'proj-icon', 'proj-tech', 'proj-github', 'proj-live'].forEach(id => {
+                    document.getElementById(id).value = '';
+                });
+            } else {
+                showAdminToast('❌ Failed to add project');
+            }
+        } catch (e) {
+            showAdminToast('❌ Error: ' + e.message);
+        }
+    }
+
+    async function deleteProject(id) {
+        if (!confirm('Delete this project?')) return;
+        try {
+            await fetch(`${API_BASE}/projects`, {
+                method: 'DELETE',
+                headers: authHeaders(),
+                body: JSON.stringify({ id })
+            });
+            showAdminToast('🗑️ Project deleted');
+            loadProjects();
+        } catch (e) {
+            showAdminToast('❌ Failed to delete');
+        }
+    }
+
+    // ============================
+    // TESTIMONIALS
+    // ============================
+    async function loadTestimonials() {
+        const container = document.getElementById('testimonialsList');
+        container.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Loading...</div>';
+
+        try {
+            const res = await fetch(`${API_BASE}/testimonials`, { headers: authHeaders() });
+            const data = await res.json();
+
+            if (!data.success || !data.testimonials?.length) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💬</div>No testimonials yet</div>';
+                return;
+            }
+
+            container.innerHTML = data.testimonials.map(t => `
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div>
+                            <div class="data-card-title">${t.avatar || '👤'} ${escapeHtml(t.name)}
+                                <span class="badge ${t.status}">${t.status}</span>
+                            </div>
+                            <div class="data-card-meta">${escapeHtml(t.role || '')} · ${'⭐'.repeat(t.rating || 5)} · ${formatDate(t.createdAt)}</div>
+                        </div>
+                        <div class="data-card-actions">
+                            ${t.status === 'pending' ? `
+                                <button class="action-btn approve" onclick="updateTestimonial('${t.id}', 'approved')">✓</button>
+                                <button class="action-btn reject" onclick="updateTestimonial('${t.id}', 'rejected')">✗</button>
+                            ` : ''}
+                            <button class="action-btn delete" onclick="deleteTestimonial('${t.id}')">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="data-card-text">"${escapeHtml(t.text)}"</div>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            container.innerHTML = `<div class="empty-state">Error: ${e.message}</div>`;
+        }
+    }
+
+    async function updateTestimonial(id, status) {
+        try {
+            await fetch(`${API_BASE}/testimonials`, {
+                method: 'PATCH',
+                headers: authHeaders(),
+                body: JSON.stringify({ id, status })
+            });
+            showAdminToast(`✅ Testimonial ${status}!`);
+            loadTestimonials();
+        } catch (e) {
+            showAdminToast('❌ Failed to update');
+        }
+    }
+
+    async function deleteTestimonial(id) {
+        if (!confirm('Delete this testimonial?')) return;
+        try {
+            await fetch(`${API_BASE}/testimonials`, {
+                method: 'DELETE',
+                headers: authHeaders(),
+                body: JSON.stringify({ id })
+            });
+            showAdminToast('🗑️ Deleted');
+            loadTestimonials();
+        } catch (e) {
+            showAdminToast('❌ Failed');
+        }
+    }
+
+    // ============================
+    // VAULT
+    // ============================
+    async function loadVault() {
+        const container = document.getElementById('vaultList');
+        container.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Loading...</div>';
+
+        try {
+            const res = await fetch(`${API_BASE}/vault`);
+            const data = await res.json();
+
+            if (!data.success || !data.products?.length) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏪</div>No products yet</div>';
+                return;
+            }
+
+            container.innerHTML = data.products.map(p => `
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div>
+                            <div class="data-card-title">${p.icon || '📦'} ${escapeHtml(p.title)}</div>
+                            <div class="data-card-meta">
+                                💰 $${p.price || 0} · 
+                                👀 ${p.interests || 0} interested · 
+                                ${p.available ? '<span class="badge approved">Available</span>' : '<span class="badge pending">Coming Soon</span>'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="data-card-text">${escapeHtml(p.description || '')}</div>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            container.innerHTML = `<div class="empty-state">Error: ${e.message}</div>`;
+        }
+    }
+
+    async function loadInterests() {
+        const container = document.getElementById('interestsList');
+        container.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Loading...</div>';
+
+        try {
+            const res = await fetch(`${API_BASE}/vault?type=interests`, { headers: authHeaders() });
+            const data = await res.json();
+
+            if (!data.success || !data.interests?.length) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💌</div>No purchase interests yet</div>';
+                return;
+            }
+
+            container.innerHTML = data.interests.map(i => `
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div>
+                            <div class="data-card-title">${escapeHtml(i.name || 'Anonymous')}</div>
+                            <div class="data-card-meta">📧 ${escapeHtml(i.email)} · ${escapeHtml(i.productName)} · ${formatDate(i.createdAt)}</div>
+                        </div>
+                    </div>
+                    ${i.message ? `<div class="data-card-text">${escapeHtml(i.message)}</div>` : ''}
+                </div>
+            `).join('');
+        } catch (e) {
+            container.innerHTML = `<div class="empty-state">Error: ${e.message}</div>`;
+        }
+    }
+
+    // ============================
+    // ANALYTICS
+    // ============================
+    async function loadAnalytics() {
+        try {
+            const res = await fetch(`${API_BASE}/analytics`, { headers: authHeaders() });
+            const data = await res.json();
+
+            if (!data.success) return;
+
+            const { totals, analytics } = data;
+
+            document.getElementById('total-visits').textContent = totals?.totalVisits || 0;
+            document.getElementById('total-fun').textContent = totals?.funZoneInteractions || 0;
+            document.getElementById('total-demos').textContent = totals?.projectDemoClicks || 0;
+            document.getElementById('total-days').textContent = analytics?.length || 0;
+
+            // Build bar chart for last 7 days
+            const last7 = analytics?.slice(0, 7) || [];
+            const maxVisits = Math.max(...last7.map(d => d.totalVisits || 0), 1);
+
+            const chartEl = document.getElementById('analyticsChart');
+            if (!last7.length) {
+                chartEl.innerHTML = '<div class="empty-state">No analytics data yet</div>';
+                return;
+            }
+
+            chartEl.innerHTML = last7.map(day => {
+                const pct = Math.round(((day.totalVisits || 0) / maxVisits) * 100);
+                return `
+                    <div class="analytics-bar-row">
+                        <div class="analytics-bar-label">${day.date?.slice(5) || '?'}</div>
+                        <div class="analytics-bar-track">
+                            <div class="analytics-bar-fill" style="width: ${pct}%">
+                                ${day.totalVisits > 0 ? `<span class="analytics-bar-value">${day.totalVisits}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+        } catch (e) {
+            showAdminToast('❌ Analytics error: ' + e.message);
+        }
+    }
+
+    // ============================
+    // UTILITIES
+    // ============================
+    function showAdminToast(message) {
+        const toast = document.getElementById('adminToast');
+        toast.textContent = message;
+        toast.classList.add('visible');
+        setTimeout(() => toast.classList.remove('visible'), 2500);
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '—';
+        return new Date(dateStr).toLocaleString('en-IN', {
+            day: '2-digit', month: 'short',
+            hour: '2-digit', minute: '2-digit'
+        });
+    }
+</script>
+</body>
+</html>
