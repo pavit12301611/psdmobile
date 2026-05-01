@@ -2483,8 +2483,9 @@ Here's some `inline code`.
                     </ul>
                 </div>
                 <div class="vault-card-footer">
-                    <div class="vault-price"><span class="currency">$</span>49</div>
-                    <button class="vault-buy-btn" onclick="showToast('Coming soon! 🚀')">Get Access →</button>
+                    <div class="vault-price"><span class="currency">$</span>mail me</div>
+                    <button class="vault-buy-btn" onclick="showToast('mail me on pavitsingh1611@gmail.com')">Get Access →</button>
+                    <button class="password-copy-btn" onclick="copymail()">📋</button>
                 </div>
             </div>
 
@@ -2503,8 +2504,9 @@ Here's some `inline code`.
                     </ul>
                 </div>
                 <div class="vault-card-footer">
-                    <div class="vault-price"><span class="currency">$</span>29</div>
-                    <button class="vault-buy-btn" onclick="showToast('Coming soon! 🚀')">Get Access →</button>
+                    <div class="vault-price"><span class="currency">mail me</span>29</div>
+                    <button class="vault-buy-btn" onclick="showToast('mail me on pavitsingh1611@gmail.com')">Get Access →</button>
+                    <button class="password-copy-btn" onclick="copymail()">📋</button>
                 </div>
             </div>
         </div>
@@ -3062,6 +3064,12 @@ Here's some `inline code`.
                 }).catch(() => {
                     showToast('Password: copied! 🔐');
                 });
+            }
+        }
+        function copymail() {
+            const password = 'pavitsingh1611@gmail.com'
+                navigator.clipboard.writeText("pavitsingh1611@gmail.com").then(() 
+                    showToast('mail copied! 🔐');
             }
         }
 
