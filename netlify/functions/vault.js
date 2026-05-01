@@ -1,174 +1,165 @@
-const { initFaunaClient, handleCORS, validateAdminKey } = require('./utils/fauna');
-const faunadb = require('faunadb');
-const q = faunadb.query;
+const { ObjectId } = require('mongodb');
+const {
+  connectToDatabase,
+  handleCORS,
+  validateAdminKey,
+  formatDoc,
+  formatDocs,
+  successResponse,
+  errorResponse,
+  unauthorizedResponse
+} = require('./utils/mongodb');
 
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return handleCORS();
 
-  const client = initFaunaClient();
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json'
-  };
-
   try {
-    // GET - Fetch all vault products
+    const { db } = await connectToDatabase();
+    const productsCol  = db.collection('vault_products');
+    const interestsCol = db.collection('purchase_interests');
+
+    // ─── GET: Fetch products or interests ───────────────────────
     if (event.httpMethod === 'GET') {
-      const result = await client.query(
-        q.Map(
-          q.Paginate(q.Documents(q.Collection('vault_products'))),
-          q.Lambda('ref', q.Get(q.Var('ref')))
-        )
-      );
+      const { type } = event.queryStringParameters || {};
 
-      const products = result.data.map(doc => ({
-        id: doc.ref.id,
-        ...doc.data
-      }));
+      // Get purchase interests — admin only
+      if (type === 'interests') {
+        if (!validateAdminKey(event.headers.authorization)) {
+          return unauthorizedResponse();
+        }
+        const interests = await interestsCol
+          .find({})
+          .sort({ createdAt: -1 })
+          .toArray();
+        return successResponse({ interests: formatDocs(interests) });
+      }
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ success: true, products })
-      };
+      // Get all products — public
+      const isAdmin = validateAdminKey(event.headers.authorization);
+      const filter  = isAdmin ? {} : { visible: true };
+
+      const products = await productsCol
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .toArray();
+
+      return successResponse({ products: formatDocs(products) });
     }
 
-    // POST - Purchase interest (not actual payment)
+    // ─── POST: Register purchase interest (public) ───────────────
     if (event.httpMethod === 'POST') {
-      const data = JSON.parse(event.body);
+      const body = JSON.parse(event.body || '{}');
 
-      if (!data.productId || !data.email) {
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({ success: false, error: 'Product ID and email required' })
-        };
+      if (!body.productId || !body.email) {
+        return errorResponse('Product ID and email are required', 400);
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(body.email)) {
+        return errorResponse('Invalid email format', 400);
+      }
+
+      // Check for duplicate interest
+      const existing = await interestsCol.findOne({
+        productId: body.productId,
+        email: body.email.toLowerCase()
+      });
+
+      if (existing) {
+        return successResponse({
+          message: "You're already on the list! Pavit will email you 📬"
+        });
       }
 
       const interest = {
-        productId: data.productId,
-        productName: data.productName || 'Unknown',
-        email: data.email,
-        name: data.name || 'Anonymous',
-        message: data.message || '',
-        status: 'interested',
-        createdAt: new Date().toISOString()
+        productId:   body.productId,
+        productName: (body.productName || 'Unknown Product').slice(0, 200),
+        email:       body.email.trim().toLowerCase().slice(0, 200),
+        name:        (body.name || 'Anonymous').trim().slice(0, 100),
+        message:     (body.message || '').trim().slice(0, 500),
+        status:      'interested',
+        createdAt:   new Date()
       };
 
-      const result = await client.query(
-        q.Create(q.Collection('purchase_interests'), { data: interest })
-      );
+      const result = await interestsCol.insertOne(interest);
 
-      // Update product interest count
+      // Increment interest count on product
       try {
-        const product = await client.query(
-          q.Get(q.Ref(q.Collection('vault_products'), data.productId))
+        await productsCol.updateOne(
+          { _id: new ObjectId(body.productId) },
+          { $inc: { interests: 1 } }
         );
-        await client.query(
-          q.Update(q.Ref(q.Collection('vault_products'), data.productId), {
-            data: { interests: (product.data.interests || 0) + 1 }
-          })
-        );
-      } catch (e) { /* Product might not exist yet */ }
+      } catch (e) { /* Product may not have ObjectId format */ }
 
-      return {
-        statusCode: 201,
-        headers,
-        body: JSON.stringify({
-          success: true,
-          message: "Thanks for your interest! Pavit will email you when it's ready 🚀",
-          id: result.ref.id
-        })
-      };
+      return successResponse({
+        message: "🚀 You're on the list! Pavit will email you when it's ready.",
+        id: result.insertedId.toString()
+      }, 201);
     }
 
-    // PUT - Create/Update vault product (admin)
+    // ─── PUT: Create or update vault product (admin only) ────────
     if (event.httpMethod === 'PUT') {
-      const authHeader = event.headers.authorization;
-      if (!validateAdminKey(authHeader)) {
-        return {
-          statusCode: 401,
-          headers,
-          body: JSON.stringify({ success: false, error: 'Unauthorized' })
-        };
+      if (!validateAdminKey(event.headers.authorization)) {
+        return unauthorizedResponse();
       }
 
-      const data = JSON.parse(event.body);
+      const body = JSON.parse(event.body || '{}');
 
-      if (data.id) {
-        // Update existing
-        const { id, ...updateData } = data;
-        const result = await client.query(
-          q.Update(q.Ref(q.Collection('vault_products'), id), {
-            data: { ...updateData, updatedAt: new Date().toISOString() }
-          })
+      if (body.id) {
+        // Update existing product
+        const { id, ...updateFields } = body;
+        delete updateFields._id;
+        updateFields.updatedAt = new Date();
+
+        await productsCol.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: updateFields }
         );
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({
-            success: true,
-            product: { id: result.ref.id, ...result.data }
-          })
-        };
-      } else {
-        // Create new
-        const product = {
-          title: data.title,
-          description: data.description,
-          icon: data.icon || '📦',
-          price: data.price || 0,
-          badge: data.badge || 'New',
-          features: data.features || [],
-          interests: 0,
-          available: data.available || false,
-          createdAt: new Date().toISOString()
-        };
-        const result = await client.query(
-          q.Create(q.Collection('vault_products'), { data: product })
-        );
-        return {
-          statusCode: 201,
-          headers,
-          body: JSON.stringify({
-            success: true,
-            product: { id: result.ref.id, ...result.data }
-          })
-        };
-      }
-    }
 
-    // GET interests (admin)
-    if (event.httpMethod === 'GET' &&
-        event.queryStringParameters?.type === 'interests') {
-      const authHeader = event.headers.authorization;
-      if (!validateAdminKey(authHeader)) {
-        return { statusCode: 401, headers, body: JSON.stringify({ success: false }) };
+        const updated = await productsCol.findOne({ _id: new ObjectId(id) });
+        return successResponse({ product: formatDoc(updated) });
       }
 
-      const result = await client.query(
-        q.Map(
-          q.Paginate(q.Documents(q.Collection('purchase_interests'))),
-          q.Lambda('ref', q.Get(q.Var('ref')))
-        )
-      );
+      // Create new product
+      if (!body.title) return errorResponse('Product title is required', 400);
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({
-          success: true,
-          interests: result.data.map(d => ({ id: d.ref.id, ...d.data }))
-        })
+      const product = {
+        title:       body.title.slice(0, 200),
+        description: (body.description || '').slice(0, 1000),
+        icon:        body.icon || '📦',
+        price:       parseFloat(body.price) || 0,
+        badge:       (body.badge || 'New').slice(0, 50),
+        features:    Array.isArray(body.features) ? body.features : [],
+        interests:   0,
+        available:   Boolean(body.available),
+        visible:     Boolean(body.visible !== false),
+        createdAt:   new Date(),
+        updatedAt:   new Date()
       };
+
+      const result = await productsCol.insertOne(product);
+      const inserted = await productsCol.findOne({ _id: result.insertedId });
+
+      return successResponse({ product: formatDoc(inserted) }, 201);
     }
 
-  } catch (error) {
-    console.error('Vault function error:', error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ success: false, error: error.message })
-    };
+    // ─── DELETE: Remove product (admin only) ─────────────────────
+    if (event.httpMethod === 'DELETE') {
+      if (!validateAdminKey(event.headers.authorization)) {
+        return unauthorizedResponse();
+      }
+
+      const body = JSON.parse(event.body || '{}');
+      if (!body.id) return errorResponse('Product ID is required', 400);
+
+      await productsCol.deleteOne({ _id: new ObjectId(body.id) });
+      return successResponse({ message: 'Product deleted' });
+    }
+
+    return errorResponse('Method not allowed', 405);
+
+  } catch (err) {
+    console.error('Vault function error:', err);
+    return errorResponse(err.message);
   }
 };
