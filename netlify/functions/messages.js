@@ -1,161 +1,141 @@
-const { initFaunaClient, handleCORS, validateAdminKey } = require('./utils/fauna');
-const faunadb = require('faunadb');
-const q = faunadb.query;
+const { ObjectId } = require('mongodb');
+const {
+  connectToDatabase,
+  handleCORS,
+  validateAdminKey,
+  formatDoc,
+  formatDocs,
+  successResponse,
+  errorResponse,
+  unauthorizedResponse
+} = require('./utils/mongodb');
 
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return handleCORS();
 
-  const client = initFaunaClient();
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json'
-  };
-
   try {
-    // POST - Submit contact message
-    if (event.httpMethod === 'POST') {
-      const data = JSON.parse(event.body);
+    const { db } = await connectToDatabase();
+    const collection = db.collection('messages');
 
-      // Basic validation
-      if (!data.name || !data.email || !data.message) {
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({
-            success: false,
-            error: 'Name, email, and message are required'
-          })
-        };
+    // ─── POST: Submit a contact message (public) ────────────────
+    if (event.httpMethod === 'POST') {
+      const body = JSON.parse(event.body || '{}');
+
+      // Validation
+      const errors = [];
+      if (!body.name?.trim()) errors.push('Name is required');
+      if (!body.email?.trim()) errors.push('Email is required');
+      if (!body.message?.trim()) errors.push('Message is required');
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (body.email && !emailRegex.test(body.email)) {
+        errors.push('Invalid email format');
       }
 
-      // Email format validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(data.email)) {
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({ success: false, error: 'Invalid email format' })
-        };
+      if (errors.length > 0) {
+        return errorResponse(errors.join(', '), 400);
+      }
+
+      // Simple spam check — block messages under 10 chars
+      if (body.message.trim().length < 10) {
+        return errorResponse('Message is too short', 400);
       }
 
       const message = {
-        name: data.name.slice(0, 100),
-        email: data.email.slice(0, 200),
-        subject: (data.subject || 'No Subject').slice(0, 200),
-        message: data.message.slice(0, 2000),
-        type: data.type || 'contact', // contact, collab, hire
-        status: 'unread',
-        ip: event.headers['x-forwarded-for'] || 'unknown',
-        userAgent: event.headers['user-agent'] || 'unknown',
-        createdAt: new Date().toISOString()
+        name:      body.name.trim().slice(0, 100),
+        email:     body.email.trim().toLowerCase().slice(0, 200),
+        subject:   (body.subject || 'No Subject').trim().slice(0, 200),
+        message:   body.message.trim().slice(0, 3000),
+        type:      ['contact', 'collab', 'hire', 'feedback'].includes(body.type)
+                     ? body.type : 'contact',
+        status:    'unread',
+        ip:        event.headers['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown',
+        userAgent: (event.headers['user-agent'] || 'unknown').slice(0, 300),
+        createdAt: new Date()
       };
 
-      const result = await client.query(
-        q.Create(q.Collection('messages'), { data: message })
-      );
+      const result = await collection.insertOne(message);
 
-      return {
-        statusCode: 201,
-        headers,
-        body: JSON.stringify({
-          success: true,
-          message: 'Message sent! Pavit will get back to you soon 🚀',
-          id: result.ref.id
-        })
-      };
+      return successResponse({
+        message: "Message sent! Pavit will get back to you soon 🚀",
+        id: result.insertedId.toString()
+      }, 201);
     }
 
-    // GET - Fetch messages (admin only)
+    // ─── GET: Fetch messages (admin only) ───────────────────────
     if (event.httpMethod === 'GET') {
-      const authHeader = event.headers.authorization;
-      if (!validateAdminKey(authHeader)) {
-        return {
-          statusCode: 401,
-          headers,
-          body: JSON.stringify({ success: false, error: 'Unauthorized' })
-        };
+      if (!validateAdminKey(event.headers.authorization)) {
+        return unauthorizedResponse();
       }
 
-      const { filter } = event.queryStringParameters || {};
-      let query;
+      const { status, type, limit = '100', skip = '0' } = event.queryStringParameters || {};
 
-      if (filter === 'unread') {
-        query = q.Map(
-          q.Paginate(q.Match(q.Index('messages_by_status'), 'unread')),
-          q.Lambda('ref', q.Get(q.Var('ref')))
-        );
-      } else {
-        query = q.Map(
-          q.Paginate(q.Documents(q.Collection('messages')), { size: 100 }),
-          q.Lambda('ref', q.Get(q.Var('ref')))
-        );
-      }
+      const filter = {};
+      if (status) filter.status = status;
+      if (type) filter.type = type;
 
-      const result = await client.query(query);
-      const messages = result.data.map(doc => ({
-        id: doc.ref.id,
-        ...doc.data
-      }));
+      const [messages, total, unreadCount] = await Promise.all([
+        collection
+          .find(filter)
+          .sort({ createdAt: -1 })
+          .skip(parseInt(skip))
+          .limit(parseInt(limit))
+          .toArray(),
+        collection.countDocuments(filter),
+        collection.countDocuments({ status: 'unread' })
+      ]);
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ success: true, messages, count: messages.length })
-      };
+      return successResponse({
+        messages: formatDocs(messages),
+        total,
+        unreadCount
+      });
     }
 
-    // PATCH - Mark message as read
+    // ─── PATCH: Update message status (admin only) ──────────────
     if (event.httpMethod === 'PATCH') {
-      const authHeader = event.headers.authorization;
-      if (!validateAdminKey(authHeader)) {
-        return {
-          statusCode: 401,
-          headers,
-          body: JSON.stringify({ success: false, error: 'Unauthorized' })
-        };
+      if (!validateAdminKey(event.headers.authorization)) {
+        return unauthorizedResponse();
       }
 
-      const { id, status } = JSON.parse(event.body);
-      await client.query(
-        q.Update(q.Ref(q.Collection('messages'), id), {
-          data: { status: status || 'read', readAt: new Date().toISOString() }
-        })
+      const body = JSON.parse(event.body || '{}');
+      if (!body.id) return errorResponse('Message ID is required', 400);
+
+      const validStatuses = ['unread', 'read', 'replied', 'archived'];
+      const status = validStatuses.includes(body.status) ? body.status : 'read';
+
+      await collection.updateOne(
+        { _id: new ObjectId(body.id) },
+        {
+          $set: {
+            status,
+            updatedAt: new Date(),
+            ...(status === 'read' ? { readAt: new Date() } : {}),
+            ...(status === 'replied' ? { repliedAt: new Date() } : {})
+          }
+        }
       );
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ success: true })
-      };
+      return successResponse({ message: `Message marked as ${status}` });
     }
 
-    // DELETE - Delete message
+    // ─── DELETE: Delete message (admin only) ────────────────────
     if (event.httpMethod === 'DELETE') {
-      const authHeader = event.headers.authorization;
-      if (!validateAdminKey(authHeader)) {
-        return {
-          statusCode: 401,
-          headers,
-          body: JSON.stringify({ success: false, error: 'Unauthorized' })
-        };
+      if (!validateAdminKey(event.headers.authorization)) {
+        return unauthorizedResponse();
       }
 
-      const { id } = JSON.parse(event.body);
-      await client.query(q.Delete(q.Ref(q.Collection('messages'), id)));
+      const body = JSON.parse(event.body || '{}');
+      if (!body.id) return errorResponse('Message ID is required', 400);
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ success: true, message: 'Message deleted' })
-      };
+      await collection.deleteOne({ _id: new ObjectId(body.id) });
+      return successResponse({ message: 'Message deleted' });
     }
 
-  } catch (error) {
-    console.error('Messages function error:', error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ success: false, error: error.message })
-    };
+    return errorResponse('Method not allowed', 405);
+
+  } catch (err) {
+    console.error('Messages function error:', err);
+    return errorResponse(err.message);
   }
 };
