@@ -2483,9 +2483,8 @@ Here's some `inline code`.
                     </ul>
                 </div>
                 <div class="vault-card-footer">
-                    <div class="vault-price"><span class="currency">$</span>mail me</div>
-                    <button class="vault-buy-btn" onclick="showToast('mail me on pavitsingh1611@gmail.com')">Get Access →</button>
-                    <button class="password-copy-btn" onclick="copymail()">📋</button>
+                    <div class="vault-price"><span class="currency">$</span>49</div>
+                    <button class="vault-buy-btn" onclick="showToast('Coming soon! 🚀')">Get Access →</button>
                 </div>
             </div>
 
@@ -2504,9 +2503,8 @@ Here's some `inline code`.
                     </ul>
                 </div>
                 <div class="vault-card-footer">
-                    <div class="vault-price"><span class="currency">mail me</span>29</div>
-                    <button class="vault-buy-btn" onclick="showToast('mail me on pavitsingh1611@gmail.com')">Get Access →</button>
-                    <button class="password-copy-btn" onclick="copymail()">📋</button>
+                    <div class="vault-price"><span class="currency">$</span>29</div>
+                    <button class="vault-buy-btn" onclick="showToast('Coming soon! 🚀')">Get Access →</button>
                 </div>
             </div>
         </div>
@@ -3066,12 +3064,6 @@ Here's some `inline code`.
                 });
             }
         }
-        function copymail() {
-            const password = 'pavitsingh1611@gmail.com'
-                navigator.clipboard.writeText("pavitsingh1611@gmail.com").then(() 
-                    showToast('mail copied! 🔐');
-            }
-        }
 
         // ==========================================
         // MARKDOWN PREVIEWER
@@ -3379,48 +3371,5 @@ Here's some `inline code`.
             lastTouchEnd = now;
         }, false);
     </script>
-    <!-- Add this before </body> in your portfolio -->
-<script>
-// Track page visits automatically
-const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
-
-fetch('/.netlify/functions/analytics', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        section: 'hero',
-        device: device,
-        referrer: document.referrer || 'direct'
-    })
-}).catch(() => {}); // Silent fail — don't break the site
-
-// Track section views on scroll
-const sections = ['about','skills','projects','vault','funzone','personality'];
-const sectionObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            fetch('/.netlify/functions/analytics', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ section: entry.target.id, device })
-            }).catch(() => {});
-        }
-    });
-}, { threshold: 0.3 });
-
-sections.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) sectionObserver.observe(el);
-});
-
-// Track fun zone interactions
-function trackInteraction(type) {
-    fetch('/.netlify/functions/analytics', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ interaction: type })
-    }).catch(() => {});
-}
-</script>
 </body>
 </html>
