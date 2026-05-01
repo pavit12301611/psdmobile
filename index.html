@@ -3371,5 +3371,48 @@ Here's some `inline code`.
             lastTouchEnd = now;
         }, false);
     </script>
+    <!-- Add this before </body> in your portfolio -->
+<script>
+// Track page visits automatically
+const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+
+fetch('/.netlify/functions/analytics', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        section: 'hero',
+        device: device,
+        referrer: document.referrer || 'direct'
+    })
+}).catch(() => {}); // Silent fail — don't break the site
+
+// Track section views on scroll
+const sections = ['about','skills','projects','vault','funzone','personality'];
+const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            fetch('/.netlify/functions/analytics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ section: entry.target.id, device })
+            }).catch(() => {});
+        }
+    });
+}, { threshold: 0.3 });
+
+sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) sectionObserver.observe(el);
+});
+
+// Track fun zone interactions
+function trackInteraction(type) {
+    fetch('/.netlify/functions/analytics', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interaction: type })
+    }).catch(() => {});
+}
+</script>
 </body>
 </html>
