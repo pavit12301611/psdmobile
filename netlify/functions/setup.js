@@ -1,153 +1,311 @@
-// Run this ONCE to set up your FaunaDB collections and indexes
-// Visit: /.netlify/functions/setup?init=true&key=YOUR_ADMIN_KEY
-
-const faunadb = require('faunadb');
-const q = faunadb.query;
+const {
+  connectToDatabase,
+  validateAdminKey,
+  successResponse,
+  errorResponse
+} = require('./utils/mongodb');
 
 exports.handler = async (event) => {
-  const { init, key } = event.queryStringParameters || {};
-  const headers = { 'Content-Type': 'application/json' };
-
-  if (!init || key !== process.env.ADMIN_SECRET_KEY) {
-    return {
-      statusCode: 403,
-      headers,
-      body: JSON.stringify({ error: 'Forbidden. Provide ?init=true&key=YOUR_ADMIN_KEY' })
-    };
+  // Security check
+  const { key } = event.queryStringParameters || {};
+  if (!key || key !== process.env.ADMIN_SECRET_KEY) {
+    return errorResponse('Forbidden — Provide ?key=YOUR_ADMIN_KEY', 403);
   }
-
-  const client = new faunadb.Client({
-    secret: process.env.FAUNA_SECRET_KEY
-  });
 
   const results = [];
-  const errors = [];
+  const errors  = [];
 
-  // Helper to safely create
-  async function safeCreate(name, query) {
-    try {
-      await client.query(query);
-      results.push(`✅ Created: ${name}`);
-    } catch (e) {
-      if (e.message?.includes('already exists') || e.description?.includes('already exists')) {
-        results.push(`⏭️ Already exists: ${name}`);
-      } else {
-        errors.push(`❌ Failed: ${name} — ${e.message}`);
+  try {
+    const { db } = await connectToDatabase();
+
+    // ─── Create Collections with Validators ─────────────────────
+    const collections = [
+      {
+        name: 'projects',
+        validator: {
+          $jsonSchema: {
+            bsonType: 'object',
+            required: ['title', 'createdAt'],
+            properties: {
+              title:       { bsonType: 'string', maxLength: 150 },
+              description: { bsonType: 'string' },
+              status:      { enum: ['live', 'wip', 'archived'] },
+              views:       { bsonType: 'int' },
+              likes:       { bsonType: 'int' }
+            }
+          }
+        }
+      },
+      {
+        name: 'messages',
+        validator: {
+          $jsonSchema: {
+            bsonType: 'object',
+            required: ['name', 'email', 'message', 'createdAt'],
+            properties: {
+              name:    { bsonType: 'string' },
+              email:   { bsonType: 'string' },
+              message: { bsonType: 'string' },
+              status:  { enum: ['unread', 'read', 'replied', 'archived'] },
+              type:    { enum: ['contact', 'collab', 'hire', 'feedback'] }
+            }
+          }
+        }
+      },
+      { name: 'analytics' },
+      { name: 'vault_products' },
+      { name: 'purchase_interests' },
+      { name: 'testimonials' }
+    ];
+
+    for (const col of collections) {
+      try {
+        const createCmd = { create: col.name };
+        if (col.validator) createCmd.validator = col.validator;
+        await db.createCollection(col.name, col.validator ? { validator: col.validator } : {});
+        results.push(`✅ Created collection: ${col.name}`);
+      } catch (e) {
+        if (e.code === 48) {
+          results.push(`⏭️  Already exists: ${col.name}`);
+        } else {
+          errors.push(`❌ Failed to create ${col.name}: ${e.message}`);
+        }
       }
     }
-  }
 
-  // Create Collections
-  await safeCreate('Collection: projects',
-    q.CreateCollection({ name: 'projects' }));
+    // ─── Create Indexes ─────────────────────────────────────────
+    const indexes = [
+      // Projects indexes
+      {
+        collection: 'projects',
+        index: { status: 1, featured: -1, createdAt: -1 },
+        options: { name: 'projects_status_featured' }
+      },
+      {
+        collection: 'projects',
+        index: { createdAt: -1 },
+        options: { name: 'projects_createdAt' }
+      },
 
-  await safeCreate('Collection: messages',
-    q.CreateCollection({ name: 'messages' }));
+      // Messages indexes
+      {
+        collection: 'messages',
+        index: { status: 1, createdAt: -1 },
+        options: { name: 'messages_status_date' }
+      },
+      {
+        collection: 'messages',
+        index: { email: 1 },
+        options: { name: 'messages_email' }
+      },
+      {
+        collection: 'messages',
+        index: { createdAt: -1 },
+        options: { name: 'messages_createdAt' }
+      },
 
-  await safeCreate('Collection: analytics',
-    q.CreateCollection({ name: 'analytics' }));
+      // Analytics indexes
+      {
+        collection: 'analytics',
+        index: { date: -1 },
+        options: { name: 'analytics_date', unique: true }
+      },
 
-  await safeCreate('Collection: vault_products',
-    q.CreateCollection({ name: 'vault_products' }));
+      // Vault indexes
+      {
+        collection: 'vault_products',
+        index: { visible: 1, available: 1 },
+        options: { name: 'vault_visible_available' }
+      },
+      {
+        collection: 'purchase_interests',
+        index: { email: 1, productId: 1 },
+        options: { name: 'interests_email_product', unique: true }
+      },
+      {
+        collection: 'purchase_interests',
+        index: { createdAt: -1 },
+        options: { name: 'interests_date' }
+      },
 
-  await safeCreate('Collection: purchase_interests',
-    q.CreateCollection({ name: 'purchase_interests' }));
+      // Testimonials indexes
+      {
+        collection: 'testimonials',
+        index: { status: 1, createdAt: -1 },
+        options: { name: 'testimonials_status_date' }
+      }
+    ];
 
-  await safeCreate('Collection: testimonials',
-    q.CreateCollection({ name: 'testimonials' }));
-
-  // Wait for collections to be ready
-  await new Promise(r => setTimeout(r, 2000));
-
-  // Create Indexes
-  await safeCreate('Index: messages_by_status',
-    q.CreateIndex({
-      name: 'messages_by_status',
-      source: q.Collection('messages'),
-      terms: [{ field: ['data', 'status'] }]
-    }));
-
-  await safeCreate('Index: analytics_by_date',
-    q.CreateIndex({
-      name: 'analytics_by_date',
-      source: q.Collection('analytics'),
-      terms: [{ field: ['data', 'date'] }],
-      unique: true
-    }));
-
-  await safeCreate('Index: testimonials_by_status',
-    q.CreateIndex({
-      name: 'testimonials_by_status',
-      source: q.Collection('testimonials'),
-      terms: [{ field: ['data', 'status'] }]
-    }));
-
-  await safeCreate('Index: vault_by_available',
-    q.CreateIndex({
-      name: 'vault_by_available',
-      source: q.Collection('vault_products'),
-      terms: [{ field: ['data', 'available'] }]
-    }));
-
-  // Seed initial data
-  try {
-    // Seed a default project
-    await client.query(
-      q.Create(q.Collection('projects'), {
-        data: {
-          title: 'Smart Calculator',
-          description: 'A sleek retro-futuristic calculator with full math support',
-          icon: '🧮',
-          techStack: ['JavaScript', 'CSS Grid'],
-          status: 'live',
-          featured: true,
-          views: 0,
-          likes: 0,
-          createdAt: new Date().toISOString()
+    for (const idx of indexes) {
+      try {
+        await db.collection(idx.collection).createIndex(idx.index, idx.options);
+        results.push(`✅ Created index: ${idx.options.name}`);
+      } catch (e) {
+        if (e.code === 85 || e.code === 86) {
+          results.push(`⏭️  Index exists: ${idx.options.name}`);
+        } else {
+          errors.push(`❌ Index failed (${idx.options.name}): ${e.message}`);
         }
-      })
-    );
-    results.push('🌱 Seeded: Default project');
-  } catch (e) {
-    errors.push('Could not seed project: ' + e.message);
-  }
+      }
+    }
 
-  // Seed vault products
-  try {
-    await client.query(
-      q.Create(q.Collection('vault_products'), {
-        data: {
-          title: 'Neural-Flow UI Kit',
-          description: 'The exact 3D framework powering this website',
-          icon: '🧠',
-          price: 49,
-          badge: 'Popular 🔥',
-          features: [
+    // ─── Seed Initial Data ───────────────────────────────────────
+
+    // Seed Projects
+    const projectsCol = db.collection('projects');
+    const existingProjects = await projectsCol.countDocuments();
+    if (existingProjects === 0) {
+      await projectsCol.insertMany([
+        {
+          title:       'Smart Calculator',
+          description: 'A sleek retro-futuristic calculator with full math support and beautiful neon UI',
+          icon:        '🧮',
+          techStack:   ['JavaScript', 'CSS Grid', 'Math API'],
+          status:      'live',
+          featured:    true,
+          githubUrl:   '',
+          liveUrl:     '',
+          views:       0,
+          likes:       0,
+          createdAt:   new Date(),
+          updatedAt:   new Date()
+        },
+        {
+          title:       'Color Palette Generator',
+          description: 'Generate beautiful random color palettes and copy hex codes instantly',
+          icon:        '🎨',
+          techStack:   ['JavaScript', 'Color Theory', 'CSS'],
+          status:      'live',
+          featured:    true,
+          githubUrl:   '',
+          liveUrl:     '',
+          views:       0,
+          likes:       0,
+          createdAt:   new Date(),
+          updatedAt:   new Date()
+        },
+        {
+          title:       'Pixel Art Canvas',
+          description: '16x16 pixel art canvas with touch support and preset colors',
+          icon:        '🎮',
+          techStack:   ['JavaScript', 'CSS Grid', 'Touch Events'],
+          status:      'live',
+          featured:    false,
+          githubUrl:   '',
+          liveUrl:     '',
+          views:       0,
+          likes:       0,
+          createdAt:   new Date(),
+          updatedAt:   new Date()
+        }
+      ]);
+      results.push('🌱 Seeded: 3 default projects');
+    } else {
+      results.push(`⏭️  Projects already have ${existingProjects} document(s)`);
+    }
+
+    // Seed Vault Products
+    const vaultCol = db.collection('vault_products');
+    const existingVault = await vaultCol.countDocuments();
+    if (existingVault === 0) {
+      await vaultCol.insertMany([
+        {
+          title:       'Neural-Flow UI Kit',
+          description: 'The exact 3D framework powering this portfolio website',
+          icon:        '🧠',
+          price:       49,
+          badge:       'Popular 🔥',
+          features:    [
             '50+ Pre-built 3D components',
             'Three.js & GSAP integration',
-            'Responsive mobile-first',
+            'Responsive mobile-first design',
             'Neon glow effects system',
-            'Dark theme engine'
+            'Dark theme engine',
+            'Lifetime updates'
           ],
-          interests: 0,
-          available: false,
-          createdAt: new Date().toISOString()
+          interests:   0,
+          available:   false,
+          visible:     true,
+          createdAt:   new Date(),
+          updatedAt:   new Date()
+        },
+        {
+          title:       'Python Automation Core',
+          description: 'A powerful collection of Python automation scripts',
+          icon:        '🐍',
+          price:       29,
+          badge:       'New ✨',
+          features:    [
+            'File system automation',
+            'Web scraping toolkit',
+            'Data processing pipelines',
+            'Email automation suite',
+            'CLI tool generator'
+          ],
+          interests:   0,
+          available:   false,
+          visible:     true,
+          createdAt:   new Date(),
+          updatedAt:   new Date()
         }
-      })
-    );
-    results.push('🌱 Seeded: Neural-Flow UI Kit');
-  } catch (e) {
-    errors.push('Could not seed vault: ' + e.message);
-  }
+      ]);
+      results.push('🌱 Seeded: 2 vault products');
+    } else {
+      results.push(`⏭️  Vault already has ${existingVault} product(s)`);
+    }
 
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({
-      success: errors.length === 0,
-      message: '🚀 Database setup complete!',
+    // Seed Testimonials
+    const testimonialsCol = db.collection('testimonials');
+    const existingTestimonials = await testimonialsCol.countDocuments();
+    if (existingTestimonials === 0) {
+      await testimonialsCol.insertMany([
+        {
+          name:      'Mom',
+          role:      'Chief Worry Officer',
+          text:      "He hasn't come out of his room in 3 days. I slide food under the door. At least the glowing monitor tells me he's alive.",
+          avatar:    '👩',
+          rating:    5,
+          status:    'approved',
+          createdAt: new Date()
+        },
+        {
+          name:      'Coffee Machine',
+          role:      'Overworked Employee',
+          text:      'I have never been used this much in my lifecycle. This kid runs me 24/7. I am filing a complaint with the appliance union.',
+          avatar:    '☕',
+          rating:    4,
+          status:    'approved',
+          createdAt: new Date()
+        },
+        {
+          name:      'The Bugs',
+          role:      'Terrified Collective',
+          text:      'We tried. We showed up in line 47, line 203, the imports. He found us every single time. We moved to someone else\'s codebase.',
+          avatar:    '🐛',
+          rating:    1,
+          status:    'approved',
+          createdAt: new Date()
+        }
+      ]);
+      results.push('🌱 Seeded: 3 default testimonials');
+    } else {
+      results.push(`⏭️  Testimonials already have ${existingTestimonials} document(s)`);
+    }
+
+    return successResponse({
+      message: '🚀 MongoDB database setup complete!',
+      database: process.env.MONGODB_DB_NAME || 'pavit_portfolio',
       results,
-      errors
-    }, null, 2)
-  };
+      errors,
+      nextSteps: [
+        'Visit /admin to access your dashboard',
+        'Add more projects from the admin panel',
+        'Share your site and watch analytics come in!'
+      ]
+    });
+
+  } catch (err) {
+    console.error('Setup error:', err);
+    return errorResponse(`Setup failed: ${err.message}`);
+  }
 };
